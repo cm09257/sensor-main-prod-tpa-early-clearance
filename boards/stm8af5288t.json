@@ -1,0 +1,36 @@
+{
+  "build": {
+    "core": "stm8",
+    "cpu": "stm8",
+    "f_cpu": "16000000L",
+    "mcu": "stm8af5288t",
+    "variant": "stm8af5288"
+  },
+  "frameworks": ["spl"],
+  "name": "ST STM8AF5288T",
+  "upload": {
+    "maximum_ram_size": 6144,
+    "maximum_size": 65536,
+    "protocol": "stlink",
+    "protocols": ["stlink", "serial", "usb"]
+  },
+  "url": "https://www.st.com/en/microcontrollers-microprocessors/stm8af5288.html",
+  "vendor": "ST",
+  "debug": {
+    "tools": {
+      "stlink": {
+        "onboard": true,
+        "server": {
+          "package": "tool-openocd",
+          "executable": "bin/openocd",
+          "arguments": [
+            "-s", "$PACKAGE_DIR/scripts",
+            "-f", "interface/stlink.cfg",
+            "-f", "target/stm8s.cfg"
+          ]
+        }
+      }
+    },
+    "openocd_target": "stm8s"
+  }
+}

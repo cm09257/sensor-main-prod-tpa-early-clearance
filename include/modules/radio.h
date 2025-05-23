@@ -1,0 +1,108 @@
+#ifndef RADIO_H
+#define RADIO_H
+
+#include <stdint.h>
+#include "common/types.h"
+#include "stm8s.h"
+
+/**
+ * @file radio.h
+ * @brief High-Level Interface für das RFM69-Funkmodul
+ *
+ * Diese Datei definiert die Schnittstelle zur Funkkommunikation über das
+ * RFM69-Modul. Die Funktionen kapseln grundlegende Modi, das Senden
+ * und Empfangen von Paketen sowie spezifische Protokollbestandteile
+ * wie ACK/NACK oder Aktivierung.
+ */
+
+/**
+ * @brief Betriebsmodi des Funkmoduls
+ */
+typedef enum {
+    RADIO_MODE_SLEEP,     ///< Minimaler Stromverbrauch
+    RADIO_MODE_STANDBY,   ///< Startbereit, aber nicht aktiv
+    RADIO_MODE_RX,        ///< Empfangsmodus
+    RADIO_MODE_TX         ///< Sendemodus
+} radio_mode_t;
+
+/**
+ * @brief Ergebnis eines Funkübertragungsversuchs
+ */
+typedef enum {
+    RADIO_ACK_RECEIVED,   ///< Übertragung erfolgreich (ACK empfangen)
+    RADIO_NACK_RECEIVED,  ///< Übertragung abgelehnt (NACK empfangen)
+    RADIO_NO_RESPONSE,    ///< Keine Antwort empfangen
+    RADIO_ERROR           ///< Fehler beim Senden oder Empfangen
+} radio_result_t;
+
+/**
+ * @brief Initialisiert das Funkmodul (GPIOs, SyncWord, Standby-Modus)
+ */
+void radio_init(void);
+
+/**
+ * @brief Setzt den Modus des Funkmoduls (RX, TX, Standby, Sleep)
+ */
+void radio_set_mode(radio_mode_t mode);
+
+/**
+ * @brief Sendet ein beliebiges Datenpaket (low-level)
+ * @param data Zeiger auf das Datenarray
+ * @param len  Länge des Pakets in Bytes
+ * @return Ergebnis (ACK, NACK, keine Antwort, Fehler)
+ */
+radio_result_t radio_send_packet(const uint8_t* data, uint8_t len);
+
+/**
+ * @brief Sendet ein Datenpaket mit Sensordaten im Uplink-Format
+ * @param records     Pointer auf Datensätze
+ * @param count       Anzahl der Datensätze
+ * @param device_id   Pointer auf 4-Byte-Geräte-ID
+ * @param seq_nr      Sequenznummer des Pakets
+ * @return Ergebnis
+ */
+radio_result_t radio_send_data(const record_t* records, uint8_t count, const uint8_t* device_id, uint8_t seq_nr);
+
+/**
+ * @brief Sendet einen Ping mit bestimmtem Header (z. B. 0xA0 oder 0xA1)
+ * @param ping_type Header-Typ
+ * @return Ergebnis
+ */
+radio_result_t radio_send_ping(uint8_t ping_type);
+
+/**
+ * @brief Wartet nach Ping auf Aktivierungsbefehl (0xB0 mit CMD_ACTIVATION)
+ * @return TRUE, wenn Aktivierung empfangen und gültig
+ */
+bool radio_receive_for_activation(void);
+
+/**
+ * @brief Sendet eine explizite ACK-Nachricht (0xAA)
+ */
+void radio_send_ack(void);
+
+/**
+ * @brief Sendet eine explizite NACK-Nachricht (0x55)
+ */
+void radio_send_nack(void);
+
+/**
+ * @brief Empfängt ein Downlink-Paket vom Gateway nach einem Ping oder Datenuplink.
+ *
+ * Diese Funktion erwartet ein Paket mit dem Header `RADIO_DOWNLINK_HEADER` (0xB0)
+ * und extrahiert den Befehlscode sowie das zugehörige Payload.
+ *
+ * Sie wird typischerweise direkt nach einem erfolgreichen Ping- oder Datenpaketversand
+ * aufgerufen, um z. B. eine Echtzeitsynchronisation oder Konfigurationsänderung
+ * entgegenzunehmen.
+ *
+ * @param[out] cmd      Befehlscode (z. B. CMD_SET_RTC_OFFSET)
+ * @param[out] payload  Zeiger auf Pufferspeicher für das Payload
+ * @param[out] length   Länge des Payloads in Bytes
+ *
+ * @return true         Wenn ein gültiges Downlink-Paket empfangen wurde
+ * @return false        Wenn kein Paket empfangen oder das Format ungültig war
+ */
+bool radio_receive_downlink(uint8_t* cmd, uint8_t* payload, uint8_t* length);
+
+#endif

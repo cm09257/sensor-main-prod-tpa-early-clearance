@@ -1,0 +1,3 @@
+[submodule "lib/sensor-lib"]
+	path = lib/sensor-lib
+	url = https://github.com/cm09257/sensor-lib
