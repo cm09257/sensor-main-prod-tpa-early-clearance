@@ -60,8 +60,7 @@ void system_init(void)
  * Ein optionaler Watchdog könnte in zukünftigen Phasen hinzugefügt werden.
  */
 int main(void)
-{
-    // watchdog_init();        ///< TODO: Watchdog initialisieren (AWU-basiert), Phase 2
+{   
     system_init(); ///< Systemkomponenten initialisieren
     state_init();  ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
 
