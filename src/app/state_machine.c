@@ -8,12 +8,10 @@
 
 #include "stm8s.h"
 #include "app/state_machine.h"
-#include "modules/sensor.h"
 #include "modules/radio.h"
 #include "modules/settings.h"
-#include "modules/storage.h"
 #include "modules/uplink_builder.h"
-#include "modules/rtc.h"
+#include "modules/storage.h"
 #include "config/config.h"
 #include "utility/delay.h"
 #include "utility/debug.h"
@@ -25,22 +23,6 @@
 #include "modes/mode_data_transfer.h"
 #include "modes/mode_pre_high_temperature.h"
 
-// === Interner Zustand ===
-
-/// Aktueller Modus (default: TEST)
-static mode_t current_mode = MODE_TEST;
-
-/// Letzter Zeitstempel einer Messung (für spätere Plausibilitätsprüfungen)
-static timestamp_t last_measurement_ts = 0;
-
-/// Wird gesetzt, wenn ein Zustandswechsel am Ende von state_process() erfolgen soll
-static bool mode_transition_pending = FALSE;
-
-/// Modus vor Sleep (z. B. zur Rückkehr nach TEMP_ALERT)
-mode_t mode_before_halt = MODE_TEST;
-
-/// Vormerkung für nächsten Modus (bei Übergang)
-static mode_t next_mode;
 
 // === Initialisierung ===
 

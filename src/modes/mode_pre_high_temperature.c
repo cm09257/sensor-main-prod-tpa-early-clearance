@@ -1,10 +1,10 @@
 // src/modes/mode_pre_high_temperature.c
+#include "app/state_machine.h"
 #include "modes/mode_pre_high_temperature.h"
-#include "modules/sensor.h"
 #include "modules/settings.h"
 #include "modules/storage_internal.h"
-#include "modules/rtc.h"
-#include "app/state_machine.h"
+#include "periphery/tmp126.h"
+
 #include "utility/debug.h"
 
 volatile bool pre_hi_temp_alert_triggered = FALSE;
@@ -14,9 +14,10 @@ void mode_pre_high_temperature_run(void)
     Debug("[PRE_HIGH_TEMP] Start");
 
     // Alarmgrenze setzen
-    sensor_enable_high_alert(PRE_HIGH_TEMP_THRESHOLD_C);
-    sensor_disable_low_alert();
-
+    TMP126_SetHiLimit(PRE_HIGH_TEMP_THRESHOLD_C);
+    TMP126_Enable_THigh_Alert();
+    TMP126_Disable_TLow_Alert();
+    
 #ifdef PRE_HIGH_TEMP_MEASURE
     DebugLn("[PRE_HIGH_TEMP] Zyklische Messung aktiv");
 

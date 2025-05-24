@@ -1,14 +1,14 @@
+// mode_high_temperature.c
+
 #include "modes/mode_high_temperature.h"
-#include "modules/sensor.h"
-#include "modules/rtc.h"
 #include "modules/storage_internal.h"
-#include "modules/storage.h"
 #include "utility/debug.h"
 #include "app/state_machine.h"
 #include "modules/settings.h"
+#include "modules/storage.h"
+#include "modules/rtc.h"
 #include "periphery/power.h"
-
-extern mode_t mode_before_halt;
+#include "periphery/tmp126.h"
 
 void mode_high_temperature_run(void)
 {
@@ -18,7 +18,7 @@ void mode_high_temperature_run(void)
     while (state_get_current() == MODE_HIGH_TEMPERATURE)
     {
         // a) Temperatur messen
-        float temp = sensor_read_temperature();
+        float temp = TMP126_ReadTemperatureCelsius();
         DebugVal("[HTEMP] Temperaturmessung: ", (int)(temp * 100), " x0.01°C");
 
         // b) Datensatz intern speichern

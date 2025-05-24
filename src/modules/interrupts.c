@@ -1,11 +1,10 @@
 #include "stm8s.h"
-#include "modules/rtc.h"
-#include "modules/sensor.h"
-#include "periphery/power.h"
-#include "utility/debug.h"
 #include "app/state_machine.h"
-#include "periphery/hardware_resources.h"
 #include "modes/mode_pre_high_temperature.h" // ALERT-Flag
+#include "periphery/power.h"
+#include "periphery/hardware_resources.h"
+#include "periphery/mcp7940n.h"
+#include "utility/debug.h"
 
 // === RTC Wakeup ISR ===
 
@@ -17,13 +16,13 @@ INTERRUPT_HANDLER(EXTI3_IRQHandler, 9) // RTC_WAKE = PA3
 #error "Unbekannter RTC-Wake-Pin: kein EXTI-Handler definiert"
 #endif
 {
-    bool triggered_0 = rtc_was_alarm_triggered(RTC_ALARM_0);
-    bool triggered_1 = rtc_was_alarm_triggered(RTC_ALARM_1);
+    bool triggered_0 = MCP7940N_IsAlarm0Triggered(); // rtc_was_alarm_triggered(RTC_ALARM_0);
+    bool triggered_1 = MCP7940N_IsAlarm1Triggered(); //(RTC_ALARM_1);
 
-    if (triggered_0)
-        rtc_clear_alarm(RTC_ALARM_0);
-    if (triggered_1)
-        rtc_clear_alarm(RTC_ALARM_1);
+    MCP7940N_DisableAlarmX(0);   // immediately disable and clear alarms
+    MCP7940N_ClearAlarmFlagX(0); // in ISR
+    MCP7940N_DisableAlarmX(1);   // immediately disable and clear alarms
+    MCP7940N_ClearAlarmFlagX(1); // in ISR
 
     Debug("Wakeup durch Alarm: ");
     if (triggered_0)

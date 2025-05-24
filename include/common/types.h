@@ -70,7 +70,12 @@ static const char* const mode_names[MODE_COUNT] = {
  */
 static inline const char* mode_name(mode_t mode)
 {
-    return (mode >= 0 && mode < MODE_COUNT) ? mode_names[mode] : "UNKNOWN";
+    if(mode >= 0 && mode < MODE_COUNT)
+    {
+        return mode_names[mode];
+    }
+    else
+        return "UNKOWN";
 }
 
 /**

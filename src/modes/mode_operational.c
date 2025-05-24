@@ -1,11 +1,10 @@
 #include "app/state_machine.h"
-#include "modes/mode_operational.h"
-#include "modules/sensor.h"
-#include "modules/storage.h"
-#include "modules/radio.h"
-#include "modules/rtc.h"
-#include "modules/settings.h"
 #include "common/types.h"
+#include "modes/mode_operational.h"
+#include "modules/radio.h"
+#include "modules/settings.h"
+#include "modules/storage.h"
+#include "periphery/tmp126.h"
 #include "utility/debug.h"
 
 // Optional: Definition der Flags für record_t.flags
@@ -18,7 +17,7 @@ void mode_operational_run(void)
 {
     DebugLn("=== MODE_OPERATIONAL START ===");
 
-    float temp_c = sensor_read_temperature();
+    float temp_c = TMP126_ReadTemperatureCelsius();
 
     if (temp_c < -100.0f || temp_c > 200.0f)
     {

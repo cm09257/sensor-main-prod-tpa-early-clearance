@@ -2,10 +2,14 @@
 #include "modules/settings.h"
 #include "modules/storage.h"
 #include <string.h>
+#include "stm8s.h"
 #include "utility/debug.h"
 
 #define SETTINGS_ADDR 0x30 // Startadresse im EEPROM
 #define SETTINGS_CRC_ADDR (SETTINGS_ADDR + sizeof(settings_t))
+
+#define MODE_ADDR 0x20
+#define MODE_CRC_ADDR (MODE_ADDR + sizeof(mode_t))
 
 static settings_t current_settings;
 

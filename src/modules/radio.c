@@ -14,15 +14,8 @@ static radio_mode_t current_radio_mode = RADIO_MODE_SLEEP;
 void radio_init(void)
 {
     DebugLn("[RADIO] Initialisiere Funkmodul...");
-
-    RFM69_GPIO_Init_All();
     RFM69_Init();
-    RFM69_SetPA(TRUE);
-    RFM69_SetSyncWord(0x2D, 0xD4);
-    RFM69_SetModeStandby();
-    current_radio_mode = RADIO_MODE_STANDBY;
-
-    DebugLn("[RADIO] Init abgeschlossen, im STANDBY-Modus.");
+    DebugLn("[RADIO] Init abgeschlossen.");
 }
 
 void radio_set_mode(radio_mode_t mode)

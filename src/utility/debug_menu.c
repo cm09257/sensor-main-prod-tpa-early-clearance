@@ -1,11 +1,12 @@
-#include "utility/debug_menu.h"
-#include "periphery/uart.h"
-#include "modules/sensor.h"
-#include "modules/rtc.h"
-#include "app/state_machine.h"
-#include "utility/debug.h"
-#include "common/types.h"  // für mode_name(), MODE_COUNT
 #include <stdio.h>
+#include "stm8s_uart1.h"
+#include "app/state_machine.h"
+#include "common/types.h"  // für mode_name(), MODE_COUNT
+#include "modules/rtc.h"
+#include "periphery/tmp126.h"
+#include "periphery/uart.h"
+#include "utility/debug.h"
+#include "utility/debug_menu.h"
 
 static char rx_buffer;
 
@@ -38,7 +39,9 @@ void DebugMenu_Update(void)
     {
     case 't':
     {
-        float temp = sensor_read_temperature();
+        TMP126_OpenForMeasurement();
+        float temp = TMP126_ReadTemperatureCelsius();
+        TMP126_CloseForMeasurement();
         char buf[32];
         sprintf(buf, "[Temp] %.2f C", temp);
         DebugLn(buf);

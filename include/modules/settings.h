@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "common/types.h"
+#include "stm8s.h"
 
 /**
  * @file settings.h
