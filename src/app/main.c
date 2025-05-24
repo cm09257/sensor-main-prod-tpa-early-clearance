@@ -13,6 +13,7 @@
 #include "periphery/tmp126.h"
 #include "periphery/mcp7940n.h"
 #include "periphery/uart.h"
+#include "periphery/power.h"
 #include "modules/radio.h"
 #include "modules/settings.h"
 #include "utility/debug.h"
@@ -46,6 +47,8 @@ void system_init(void)
 
     radio_init();    ///< RFM69 Funkmodul vorbereiten (z. B. Standby)
     settings_load(); ///< Geräteeinstellungen (EEPROM) laden
+
+    global_power_save(); 
 
     DebugLn("System init abgeschlossen");
 }

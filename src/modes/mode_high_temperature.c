@@ -55,6 +55,7 @@ void mode_high_temperature_run(void)
 
         // e) Schlafmodus
         DebugLn("[HTEMP] HALT bis nächster RTC-Alarm");
-        sleep_until_rtc();
+        mode_before_halt = MODE_HIGH_TEMPERATURE;
+        power_enter_halt();
     }
 }

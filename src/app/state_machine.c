@@ -96,7 +96,7 @@ void state_process(void)
         break;
 
     case MODE_SLEEP:
-        power_sleep(); // verlässt Funktion erst nach Wakeup
+        power_enter_halt(); // verlässt Funktion erst nach Wakeup
         break;
     }
 

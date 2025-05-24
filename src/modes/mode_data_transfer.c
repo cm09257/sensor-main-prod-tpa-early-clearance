@@ -3,22 +3,10 @@
 #include "modules/settings.h"
 #include "modules/radio.h"
 #include "modules/storage.h"
+#include "modules/rtc.h"
 #include "periphery/mcp7940n.h"
 #include "utility/debug.h"
 
-
-
-void rtc_set_unix_timestamp(uint32_t unix_time)
-{
-    // Umwandlung von Unix-Zeit (Sekunden seit 1970) in Stunde/Minute/Sekunde
-    uint32_t total_seconds = unix_time % 86400;  // Sekunden seit Mitternacht
-    uint8_t hours = (total_seconds / 3600) % 24;
-    uint8_t minutes = (total_seconds / 60) % 60;
-    uint8_t seconds = total_seconds % 60;
-
-    MCP7940N_SetTime(hours, minutes, seconds);
-    DebugVal("[RTC] Zeit gesetzt auf (Unix)", (int)unix_time, "s");
-}
 
 static bool perform_handshake_and_timesync(void)
 {

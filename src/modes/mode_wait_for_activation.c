@@ -62,7 +62,8 @@ void mode_wait_for_activation_run(void)
 
         // 5. Sleep bis RTC-Alarm
         DebugLn("[ACT] Gehe in Sleep bis nächster RTC-Alarm (Alarm 1)");
-        sleep_until_rtc();
+        mode_before_halt = MODE_WAIT_FOR_ACTIVATION;
+        power_enter_halt();
     }
 
     DebugLn("[ACT] Verlasse MODE_WAIT_FOR_ACTIVATION");
