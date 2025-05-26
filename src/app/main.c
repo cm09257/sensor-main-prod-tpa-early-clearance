@@ -14,6 +14,7 @@
 #include "periphery/mcp7940n.h"
 #include "periphery/uart.h"
 #include "periphery/power.h"
+#include "periphery/flash.h"
 #include "modules/radio.h"
 #include "modules/settings.h"
 #include "utility/debug.h"
@@ -44,7 +45,7 @@ void system_init(void)
     random_seed(0x1234); ///< Seed für Zufallsfunktionen setzen
     TMP126_init();       // TMP126 initialisieren.
     MCP7940N_Init();     ///< Realtime Clock initialisieren
-
+    Flash_init();
     radio_init();    ///< RFM69 Funkmodul vorbereiten (z. B. Standby)
     settings_load(); ///< Geräteeinstellungen (EEPROM) laden
 
