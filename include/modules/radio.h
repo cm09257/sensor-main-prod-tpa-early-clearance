@@ -5,6 +5,12 @@
 #include "common/types.h"
 #include "stm8s.h"
 
+#define RADIO_TX_TIMEOUT_MS 200
+#define RADIO_RX_TIMEOUT_MS 100
+#define RADIO_ACTIVATION_TIMEOUT_MS 1000
+#define RADIO_ACK_TIMEOUT_MS 1000
+#define RADIO_RX_DOWNLINK_TIMEOUT 300
+
 /**
  * @file radio.h
  * @brief High-Level Interface für das RFM69-Funkmodul
@@ -18,21 +24,23 @@
 /**
  * @brief Betriebsmodi des Funkmoduls
  */
-typedef enum {
-    RADIO_MODE_SLEEP,     ///< Minimaler Stromverbrauch
-    RADIO_MODE_STANDBY,   ///< Startbereit, aber nicht aktiv
-    RADIO_MODE_RX,        ///< Empfangsmodus
-    RADIO_MODE_TX         ///< Sendemodus
+typedef enum
+{
+    RADIO_MODE_SLEEP,   ///< Minimaler Stromverbrauch
+    RADIO_MODE_STANDBY, ///< Startbereit, aber nicht aktiv
+    RADIO_MODE_RX,      ///< Empfangsmodus
+    RADIO_MODE_TX       ///< Sendemodus
 } radio_mode_t;
 
 /**
  * @brief Ergebnis eines Funkübertragungsversuchs
  */
-typedef enum {
-    RADIO_ACK_RECEIVED,   ///< Übertragung erfolgreich (ACK empfangen)
-    RADIO_NACK_RECEIVED,  ///< Übertragung abgelehnt (NACK empfangen)
-    RADIO_NO_RESPONSE,    ///< Keine Antwort empfangen
-    RADIO_ERROR           ///< Fehler beim Senden oder Empfangen
+typedef enum
+{
+    RADIO_ACK_RECEIVED,  ///< Übertragung erfolgreich (ACK empfangen)
+    RADIO_NACK_RECEIVED, ///< Übertragung abgelehnt (NACK empfangen)
+    RADIO_NO_RESPONSE,   ///< Keine Antwort empfangen
+    RADIO_ERROR          ///< Fehler beim Senden oder Empfangen
 } radio_result_t;
 
 /**
@@ -41,17 +49,12 @@ typedef enum {
 void radio_init(void);
 
 /**
- * @brief Setzt den Modus des Funkmoduls (RX, TX, Standby, Sleep)
- */
-void radio_set_mode(radio_mode_t mode);
-
-/**
  * @brief Sendet ein beliebiges Datenpaket (low-level)
  * @param data Zeiger auf das Datenarray
  * @param len  Länge des Pakets in Bytes
  * @return Ergebnis (ACK, NACK, keine Antwort, Fehler)
  */
-radio_result_t radio_send_packet(const uint8_t* data, uint8_t len);
+radio_result_t radio_send_packet(const uint8_t *data, uint8_t len);
 
 /**
  * @brief Sendet ein Datenpaket mit Sensordaten im Uplink-Format
@@ -61,7 +64,7 @@ radio_result_t radio_send_packet(const uint8_t* data, uint8_t len);
  * @param seq_nr      Sequenznummer des Pakets
  * @return Ergebnis
  */
-radio_result_t radio_send_data(const record_t* records, uint8_t count, const uint8_t* device_id, uint8_t seq_nr);
+radio_result_t radio_send_data(const record_t *records, uint8_t count, const uint8_t *device_id, uint8_t seq_nr);
 
 /**
  * @brief Sendet einen Ping mit bestimmtem Header (z. B. 0xA0 oder 0xA1)
@@ -103,6 +106,6 @@ void radio_send_nack(void);
  * @return true         Wenn ein gültiges Downlink-Paket empfangen wurde
  * @return false        Wenn kein Paket empfangen oder das Format ungültig war
  */
-bool radio_receive_downlink(uint8_t* cmd, uint8_t* payload, uint8_t* length);
+bool radio_receive_downlink(uint8_t *cmd, uint8_t *payload, uint8_t *length);
 
 #endif
