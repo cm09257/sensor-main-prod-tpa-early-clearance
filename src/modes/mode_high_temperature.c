@@ -18,18 +18,23 @@ void mode_high_temperature_run(void)
     while (state_get_current() == MODE_HIGH_TEMPERATURE)
     {
         // a) Temperatur messen
+        TMP126_OpenForMeasurement();
         float temp = TMP126_ReadTemperatureCelsius();
+        TMP126_CloseForMeasurement();
         DebugVal("[HTEMP] Temperaturmessung: ", (int)(temp * 100), " x0.01°C");
 
         // b) Datensatz intern speichern
         record_t rec;
-        rec.timestamp  = rtc_get_timestamp();  // 5-min Ticks
+        rec.timestamp = rtc_get_timestamp(); // 5-min Ticks
         rec.temperature = temp;
-        rec.flags      = 0x01; // gültiger Messwert
+        rec.flags = 0x01; // gültiger Messwert
 
-        if (!internal_flash_write_record(&rec)) {
+        if (!internal_flash_write_record(&rec))
+        {
             DebugLn("[HTEMP] Fehler beim Schreiben in internen Flash!");
-        } else {
+        }
+        else
+        {
             DebugLn("[HTEMP] Datensatz gespeichert");
         }
 
@@ -37,7 +42,8 @@ void mode_high_temperature_run(void)
         float threshold = settings_get()->cool_down_threshold;
         DebugVal("[HTEMP] Schwelle: ", (int)(threshold * 100), " x0.01°C");
 
-        if (temp < threshold) {
+        if (temp < threshold)
+        {
             DebugLn("[HTEMP] Schwelle unterschritten → Datenübernahme und Moduswechsel");
 
             copy_internal_to_external_flash();
