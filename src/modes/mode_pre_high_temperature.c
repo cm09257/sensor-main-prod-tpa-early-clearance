@@ -12,22 +12,30 @@ volatile bool pre_hi_temp_alert_triggered = FALSE;
 void mode_pre_high_temperature_run(void)
 {
     Debug("[PRE_HIGH_TEMP] Start");
-
+    if (!TMP126_OpenForAlert())
+    {
+        DebugLn("[PRE_HIGH_TEMP] Öffnen des TMP126 für Alert fehlgeschlagen");
+        state_transition(MODE_SLEEP);
+        return;
+    }
     // Alarmgrenze setzen
     TMP126_SetHiLimit(PRE_HIGH_TEMP_THRESHOLD_C);
     TMP126_Enable_THigh_Alert();
     TMP126_Disable_TLow_Alert();
-    
+
 #ifdef PRE_HIGH_TEMP_MEASURE
     DebugLn("[PRE_HIGH_TEMP] Zyklische Messung aktiv");
 
     float temp = sensor_read_temperature();
-    int temp_int = (int)(temp * 100);  // falls gewünscht: 2 Nachkommastellen
+    int temp_int = (int)(temp * 100); // falls gewünscht: 2 Nachkommastellen
     DebugVal("[PRE_HIGH_TEMP] Temperatur: ", temp_int, " x0.01 C");
 
-    if (storage_internal_add_measurement(temp)) {
+    if (storage_internal_add_measurement(temp))
+    {
         DebugLn("[PRE_HIGH_TEMP] Temperatur gespeichert");
-    } else {
+    }
+    else
+    {
         DebugLn("[PRE_HIGH_TEMP] Speicher voll oder Fehler");
     }
 
@@ -35,11 +43,15 @@ void mode_pre_high_temperature_run(void)
 #else
     DebugLn("[PRE_HIGH_TEMP] Warte auf TMP126 Alert (EXTI)");
 
-    if (pre_hi_temp_alert_triggered) {
+    if (pre_hi_temp_alert_triggered)
+    {
         pre_hi_temp_alert_triggered = FALSE;
         DebugLn("[PRE_HIGH_TEMP] ALERT erkannt → Wechsel in MODE_HIGH_TEMPERATURE");
+        TMP126_CloseForAlert();
         state_transition(MODE_HIGH_TEMPERATURE);
-    } else {
+    }
+    else
+    {
         state_transition(MODE_SLEEP);
     }
 #endif
