@@ -17,7 +17,9 @@ void mode_operational_run(void)
 {
     DebugLn("=== MODE_OPERATIONAL START ===");
 
+    TMP126_OpenForMeasurement();
     float temp_c = TMP126_ReadTemperatureCelsius();
+    TMP126_CloseForMeasurement();
 
     if (temp_c < -100.0f || temp_c > 200.0f)
     {
