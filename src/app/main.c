@@ -45,7 +45,7 @@ void system_init(void)
     random_seed(0x1234); ///< Seed für Zufallsfunktionen setzen
     TMP126_init();       // TMP126 initialisieren.
     MCP7940N_Init();     ///< Realtime Clock initialisieren
-    Flash_init();
+    Flash_Init();
     radio_init();    ///< RFM69 Funkmodul vorbereiten (z. B. Standby)
     settings_load(); ///< Geräteeinstellungen (EEPROM) laden
 

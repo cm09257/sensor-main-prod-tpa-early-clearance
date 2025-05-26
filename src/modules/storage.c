@@ -131,7 +131,7 @@ bool flash_write_record(const record_t *rec) // external flash
     if (!rec)
         return FALSE;
 
-    if (!Flash_open())
+    if (!Flash_Open())
     {
         DebugLn("[Flash] Öffnen fehlgeschlagen");
         return FALSE;
@@ -155,7 +155,7 @@ bool flash_write_record(const record_t *rec) // external flash
 
     bool ok = Flash_PageProgram(FLASH_ADDR_BASE + write_ptr, raw, RECORD_SIZE_BYTES);
 
-    Flash_close();
+    Flash_Close();
 
     if (ok)
         write_ptr += RECORD_SIZE_BYTES;
@@ -170,7 +170,7 @@ bool flash_read_record(uint16_t index, record_t *out)
     if (!out || index >= MAX_RECORDS)
         return FALSE;
 
-    if (!Flash_open()) {
+    if (!Flash_Open()) {
         DebugLn("[flash] Öffnen des Flash fehlgeschlagen");
         return FALSE;
     }
@@ -179,7 +179,7 @@ bool flash_read_record(uint16_t index, record_t *out)
     uint32_t addr = FLASH_ADDR_BASE + index * RECORD_SIZE_BYTES;
     bool ok = Flash_ReadData(addr, raw, RECORD_SIZE_BYTES);
 
-    Flash_close();
+    Flash_Close();
 
     if (!ok) {
         DebugVal("[flash] Lesen fehlgeschlagen bei Index ", index, "");
@@ -248,7 +248,7 @@ bool copy_internal_to_external_flash(void)
 
     DebugVal("[copy] Anzahl zu kopierender Datensätze: ", total, "");
 
-    if (!Flash_open()) {
+    if (!Flash_Open()) {
         DebugLn("[copy] Flash konnte nicht geöffnet werden.");
         return FALSE;
     }
@@ -259,19 +259,19 @@ bool copy_internal_to_external_flash(void)
         if (!internal_flash_read_record(i, &rec))
         {
             DebugVal("[copy] Fehler beim Lesen Index: ", i, "");
-            Flash_close();
+            Flash_Close();
             return FALSE;
         }
 
         if (!flash_write_record_nolock(&rec))  // Neue Funktion ohne open/close
         {
             DebugVal("[copy] Fehler beim Schreiben ins externe Flash bei Index: ", i, "");
-            Flash_close();
+            Flash_Close();
             return FALSE;
         }
     }
 
-    Flash_close();
+    Flash_Close();
     DebugLn("[copy] Alle internen Datensätze erfolgreich ins externe Flash kopiert!");
     return TRUE;
 }

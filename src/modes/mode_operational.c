@@ -4,6 +4,7 @@
 #include "modules/radio.h"
 #include "modules/settings.h"
 #include "modules/storage.h"
+#include "modules/rtc.h"
 #include "periphery/tmp126.h"
 #include "utility/debug.h"
 

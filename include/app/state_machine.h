@@ -68,16 +68,6 @@ void state_process(void);
 void state_transition(mode_t new_mode);
 
 /**
- * @brief Verarbeitet ein asynchrones Ereignis, z. B. durch Interrupts ausgelöst.
- * 
- * Kann verwendet werden, um auf externe Trigger oder Systemereignisse zu reagieren
- * (z. B. RTC-Wakeup, Alarm).
- * 
- * @param ev Das aufgetretene Ereignis
- */
-void state_handle_event(event_t ev);
-
-/**
  * @brief Gibt den aktuell aktiven Modus zurück.
  * 
  * @return Der aktuelle Betriebsmodus

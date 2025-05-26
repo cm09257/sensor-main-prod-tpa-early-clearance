@@ -22,6 +22,8 @@
 #include "modes/mode_operational.h"
 #include "modes/mode_data_transfer.h"
 #include "modes/mode_pre_high_temperature.h"
+#include "modes/mode_wait_for_activation.h"
+#include "modes/mode_high_temperature.h"
 
 
 // === Initialisierung ===
@@ -138,29 +140,6 @@ void state_transition(mode_t new_mode)
 
     next_mode = new_mode;
     mode_transition_pending = TRUE;
-}
-
-// === Ereignisverarbeitung ===
-
-/**
- * @brief Reagiert auf externe Ereignisse (z. B. per EXTI oder RTC-Alarm).
- *
- * Diese Funktion kann z. B. in einer Interrupt-Service-Routine aufgerufen werden.
- *
- * @param ev Ereignistyp (z. B. EVENT_WAKEUP_TIMER)
- */
-void state_handle_event(event_t ev)
-{
-    switch (ev)
-    {
-    case EVENT_WAKEUP_TIMER:
-    case EVENT_WAKEUP_TEMP_ALERT:
-        // TODO: z. B. Messung anstoßen, Schwellen prüfen
-        break;
-
-    default:
-        break;
-    }
 }
 
 /**

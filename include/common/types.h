@@ -70,7 +70,7 @@ static const char* const mode_names[MODE_COUNT] = {
  */
 static inline const char* mode_name(mode_t mode)
 {
-    if(mode >= 0 && mode < MODE_COUNT)
+    if ((unsigned)mode < MODE_COUNT)
     {
         return mode_names[mode];
     }
