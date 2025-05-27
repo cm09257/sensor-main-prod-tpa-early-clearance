@@ -41,15 +41,19 @@ void system_init(void)
     CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV8); // 2 MHz
     UART1_MyInit();                                ///< Debug UART konfigurieren (9600 8N1)
     DebugLn("System init...");
-    
+    global_power_save();
+
     random_seed(0x1234); ///< Seed für Zufallsfunktionen setzen
-    TMP126_init();       // TMP126 initialisieren.
-    MCP7940N_Init();     ///< Realtime Clock initialisieren
+    // radio_init();        ///< RFM69 Funkmodul vorbereiten (z. B. Standby)
+    // TODO: BUG: RFM69 resets in RFM69_PowerUp. 
+
+    TMP126_init();   // TMP126 initialisieren.
+    MCP7940N_Init(); ///< Realtime Clock initialisieren
     Flash_Init();
-    radio_init();    ///< RFM69 Funkmodul vorbereiten (z. B. Standby)
+
     settings_load(); ///< Geräteeinstellungen (EEPROM) laden
 
-    global_power_save(); 
+
 
     DebugLn("System init abgeschlossen");
 }
@@ -61,7 +65,7 @@ void system_init(void)
  * Ein optionaler Watchdog könnte in zukünftigen Phasen hinzugefügt werden.
  */
 int main(void)
-{   
+{
     system_init(); ///< Systemkomponenten initialisieren
     state_init();  ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
 
