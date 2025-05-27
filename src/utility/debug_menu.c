@@ -44,9 +44,10 @@ bool DebugMenu_Update(void)
     {
         char buf[32];
         TMP126_OpenForMeasurement();
-        TMP126_Format_Temperature(buf);
-        TMP126_CloseForMeasurement();        
-                
+        float tmp = TMP126_ReadTemperatureCelsius(); //(buf);
+        TMP126_CloseForMeasurement();
+        int32_t milli = (int32_t)(tmp * 1000);
+        sprintf(buf, "Temp: %ld.%02ld C", milli / 1000, (milli % 1000) / 10);
         DebugLn(buf);
         break;
     }
@@ -60,10 +61,13 @@ bool DebugMenu_Update(void)
         break;
     }
     case 'n':
+    {
         DebugLn("[DEBUG MENU] 'n' erkannt, verlasse Menü.");
         return TRUE;
+    }
 
     default:
+    {
         if (rx_buffer >= '0' && rx_buffer <= '9')
         {
             uint8_t mode = rx_buffer - '0';
@@ -87,6 +91,7 @@ bool DebugMenu_Update(void)
             DebugLn("");
         }
         break;
+    }
     }
 
     return FALSE;

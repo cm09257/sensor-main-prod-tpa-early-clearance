@@ -43,7 +43,7 @@ void mode_wait_for_activation_run(void)
 
         // 4. Nächsten Wakeup-Timer setzen
 #if DEV_MODE
-        DebugLn("[ACT] Dev-Mode: Setze Alarm 1 auf 30 s später");
+        DebugLn("[ACT] Dev-Mode: Setze Alarm 1 auf 30s später");
         rtc_set_alarm_offset(RTC_ALARM_1, 0, PING_INTERVAL_FROM_NOW);
 #else
         if (retry_count < 3)

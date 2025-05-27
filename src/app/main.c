@@ -15,9 +15,11 @@
 #include "periphery/uart.h"
 #include "periphery/power.h"
 #include "periphery/flash.h"
+#include "periphery/i2c_devices.h"
 #include "modules/radio.h"
 #include "modules/settings.h"
 #include "utility/debug.h"
+#include "utility/delay.h"
 #include "utility/random.h"
 #include "stm8s_clk.h"
 
@@ -40,21 +42,24 @@ void system_init(void)
 {
     CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV8); // 2 MHz
     UART1_MyInit();                                ///< Debug UART konfigurieren (9600 8N1)
+    I2C_Devices_Init();
     DebugLn("System init...");
-    global_power_save();
-
-    random_seed(0x1234); ///< Seed für Zufallsfunktionen setzen
-    // radio_init();        ///< RFM69 Funkmodul vorbereiten (z. B. Standby)
-    // TODO: BUG: RFM69 resets in RFM69_PowerUp. 
-
-    TMP126_init();   // TMP126 initialisieren.
     MCP7940N_Init(); ///< Realtime Clock initialisieren
-    Flash_Init();
-
-    settings_load(); ///< Geräteeinstellungen (EEPROM) laden
-
-
-
+                     /*  delay(100);
+                          DebugLn("TMP126_init...");
+                       TMP126_init(); // TMP126 initialisieren.
+                              DebugLn("TMP126_init done...");
+                       delay(100);
+                       MCP7940N_SetTime(0, 0, 0);
+                       // global_power_save();
+                 
+                       // random_seed(0x1234); ///< Seed für Zufallsfunktionen setzen
+                       // radio_init();        ///< RFM69 Funkmodul vorbereiten (z. B. Standby)
+                       // Flash_Init();
+                       // TODO: BUG: RFM69 resets in RFM69_PowerUp.
+                 
+                       settings_load(); ///< Geräteeinstellungen (EEPROM) laden
+                   */
     DebugLn("System init abgeschlossen");
 }
 
@@ -64,14 +69,27 @@ void system_init(void)
  * Initialisiert System und Zustand und ruft dann kontinuierlich den Dispatcher `state_process()` auf.
  * Ein optionaler Watchdog könnte in zukünftigen Phasen hinzugefügt werden.
  */
-int main(void)
+void main(void)
 {
-    system_init(); ///< Systemkomponenten initialisieren
-    state_init();  ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
 
-    while (1)
-    {
-        // watchdog_feed();    ///< TODO: Watchdog regelmäßig zurücksetzen
-        state_process(); ///< Dispatcher-Funktion für aktuellen Modus
-    }
+    CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV8); // 2 MHz
+    CLK_PeripheralClockConfig(CLK_PERIPHERAL_I2C, ENABLE);
+    UART1_MyInit();
+    // SPI1_Init_Hard();
+    // SPI_Devices_Init();
+    I2C_Devices_Init();
+    DebugLn("Periphery Test - Init done...");
+
+    MCP7940N_Init();
+    delay(100);
+    DebugLn("MCP7940 Init complete");
+    /*
+      //  system_init(); ///< Systemkomponenten initialisieren
+        state_init();  ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
+
+        while (1)
+        {
+            // watchdog_feed();    ///< TODO: Watchdog regelmäßig zurücksetzen
+            state_process(); ///< Dispatcher-Funktion für aktuellen Modus
+        }*/
 }
