@@ -17,7 +17,18 @@ void mode_test_run(void)
     DebugLn("[TEST] Übergang zu MODE_WAIT_FOR_ACTIVATION");
 #if defined DEV_MODE
     DebugMenu_Init();
-    DebugMenu_Update();
+    DebugLn("[DEBUG MENU] Warten auf Eingabe 'n' für nächsten Modus...");
+
+    while (1)
+    {
+        if (DebugMenu_Update())
+        {
+            DebugLn("[DEBUG MENU] Verlasse Debug-Menü...");
+            break;
+        }
+        delay(100); // CPU entlasten
+    }
+
 #else
     state_transition(MODE_WAIT_FOR_ACTIVATION);
 #endif

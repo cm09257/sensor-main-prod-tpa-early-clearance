@@ -17,6 +17,6 @@ void DebugMenu_Init(void);
 /**
  * @brief Zyklisch im Mainloop aufrufen. Erkennt Kommandos und führt Aktionen aus.
  */
-void DebugMenu_Update(void);
+bool DebugMenu_Update(void);
 
 #endif // DEBUG_MENU_H
