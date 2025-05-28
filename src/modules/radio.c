@@ -13,9 +13,7 @@ static radio_mode_t current_radio_mode = RADIO_MODE_SLEEP;
 
 void radio_init(void)
 {
-    DebugLn("[RADIO] Initialisiere Funkmodul...");
     RFM69_Init();
-    DebugLn("[RADIO] Init abgeschlossen.");
 }
 
 radio_result_t radio_send_packet(const uint8_t *data, uint8_t len)

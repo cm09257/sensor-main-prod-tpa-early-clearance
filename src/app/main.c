@@ -18,7 +18,10 @@
 #include "periphery/i2c_devices.h"
 #include "modules/radio.h"
 #include "modules/settings.h"
+#include "modules/storage_internal.h"
+#include "modules/storage.h"
 #include "utility/debug.h"
+#include "utility/debug_menu.h"
 #include "utility/delay.h"
 #include "utility/random.h"
 #include "stm8s_clk.h"
@@ -44,11 +47,7 @@ void system_init(void)
     CLK_PeripheralClockConfig(CLK_PERIPHERAL_I2C, ENABLE);
     UART1_MyInit(); ///< Debug UART konfigurieren (9600 8N1)
     I2C_Devices_Init();
-    DebugLn("System init...");
-
-    DebugLn("TMP126_init...");
     TMP126_init(); // TMP126 initialisieren.
-    DebugLn("TMP126_init done...");
     delay(100);
     global_power_save();
 
@@ -56,15 +55,15 @@ void system_init(void)
     delay(100);
 
     random_seed(0x1234); ///< Seed für Zufallsfunktionen setzen
-                         // radio_init();        ///< RFM69 Funkmodul vorbereiten (z. B. Standby)
+
     Flash_Init();
     internal_storage_init();
-    settings_load();
-    radio_init();
+    //settings_set_default();
+    //settings_save();
+    //persist_current_mode(MODE_TEST);
 
-    // TODO: BUG: RFM69 resets in RFM69_PowerUp.
-
-    //  ///< Geräteeinstellungen (EEPROM) laden
+    settings_load(); //  ///< Geräteeinstellungen (EEPROM) laden
+    radio_init();    ///< RFM69 Funkmodul vorbereiten (z. B. Standby)
 }
 
 /**
@@ -76,24 +75,31 @@ void system_init(void)
 void main(void)
 {
     system_init(); ///< Systemkomponenten initialisieren
- //  state_init();  ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
+    DebugLn("[sensor-main] Finished system_init()");
 
-    DebugLn("Finished system_init()");
+    state_init();     ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
+    DebugMenu_Init(); // Show Debug Menu
 
+    while (1)
+    {
+        state_process();
+        DebugMenu_Update();
+    }
+/*
     char buf[20];
     while (1)
     {
         uint8_t hour, min, sec;
         MCP7940N_GetTime(&hour, &min, &sec);
-        DebugUVal("h:",hour,"");
-        DebugUVal("m:",min,"");
-        DebugUVal("s:",sec,"");
+        DebugUVal("h:", hour, "");
+        DebugUVal("m:", min, "");
+        DebugUVal("s:", sec, "");
 
         TMP126_OpenForMeasurement();
         TMP126_Format_Temperature(buf);
         TMP126_CloseForMeasurement();
         DebugLn(buf);
-        
+
         delay(5000); // 5 Sekunden
-    }
+    }*/
 }

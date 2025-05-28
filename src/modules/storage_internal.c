@@ -12,7 +12,6 @@ static uint16_t internal_write_offset = 0; // Byte-Offset im reservierten EEPROM
 
 void internal_storage_init(void)
 {
-    DebugLn("[internal] Initialisiere EEPROM...");
     FLASH_Unlock(FLASH_MEMTYPE_DATA);
     // optional: internal_flash_erase_all();
 }

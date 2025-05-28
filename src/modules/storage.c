@@ -68,12 +68,10 @@ void storage_write_eeprom(uint16_t address, const uint8_t *data, uint16_t len)
 
 bool storage_read_eeprom(uint16_t address, uint8_t *data, uint16_t len) // internal flash
 {
-    DebugLn("In storage_read_eeprom");
     for (uint16_t i = 0; i < len; ++i)
     {
         data[i] = *(uint8_t *)(FLASH_DATA_START_PHYSICAL_ADDRESS + address + i);
     }
-    DebugLn("Finishing storage_read_eeprom");
     return TRUE;
 }
 

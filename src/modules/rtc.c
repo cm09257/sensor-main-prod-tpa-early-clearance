@@ -22,10 +22,10 @@ void rtc_init(void)
 void rtc_get_time(uint8_t* hour, uint8_t* minute, uint8_t* second)
 {
     MCP7940N_GetTime(hour, minute, second);
-    Debug("[RTC] Aktuelle Uhrzeit: ");
-    char buf[16];
-    sprintf(buf, "%02u:%02u:%02u", *hour, *minute, *second);
-    DebugLn(buf);
+    //Debug("[RTC] Aktuelle Uhrzeit: ");
+ //   char buf[16];
+   // sprintf(buf, "%02u:%02u:%02u", *hour, *minute, *second);
+  //  DebugLn(buf);
 }
 
 timestamp_t rtc_get_timestamp(void)

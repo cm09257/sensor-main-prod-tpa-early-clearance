@@ -12,12 +12,12 @@ static char rx_buffer;
 
 void DebugMenu_Init(void)
 {
-    DebugLn("[DEBUG MENU] Aktiv. Befehle:");
-    DebugLn("  t = Temperatur lesen");
-    DebugLn("  r = RTC-Zeit anzeigen");
-    DebugLn("  0-9 = Modus setzen");
+    DebugLn("[DEBUG MENU] Possible Commands:");
+    DebugLn("  t = Temperature Readout");
+    DebugLn("  r = RTC Time Readout");
+    DebugLn("  0-9 = Set Mode");
 
-    DebugLn("  Verfügbare Modi:");
+    DebugLn("  Available Modes:");
     for (uint8_t i = 0; i < MODE_COUNT; i++)
     {
         char buf[48];
@@ -27,7 +27,7 @@ void DebugMenu_Init(void)
 
     // Aktueller Modus anzeigen
     char buf[48];
-    sprintf(buf, "[Aktuell] MODE_%s", mode_name(state_get_current()));
+    sprintf(buf, "[Current Mode] MODE_%s", mode_name(state_get_current()));
     DebugLn(buf);
 }
 
@@ -44,10 +44,8 @@ bool DebugMenu_Update(void)
     {
         char buf[32];
         TMP126_OpenForMeasurement();
-        float tmp = TMP126_ReadTemperatureCelsius(); //(buf);
+        TMP126_Format_Temperature(buf);
         TMP126_CloseForMeasurement();
-        int32_t milli = (int32_t)(tmp * 1000);
-        sprintf(buf, "Temp: %ld.%02ld C", milli / 1000, (milli % 1000) / 10);
         DebugLn(buf);
         break;
     }
@@ -62,7 +60,7 @@ bool DebugMenu_Update(void)
     }
     case 'n':
     {
-        DebugLn("[DEBUG MENU] 'n' erkannt, verlasse Menü.");
+        DebugLn("[DEBUG MENU] 'n' received, leaving Debug Menu.");
         return TRUE;
     }
 

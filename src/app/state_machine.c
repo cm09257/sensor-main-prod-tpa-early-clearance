@@ -38,7 +38,7 @@ void state_init(void)
 {
     mode_t persisted;
 
-    if (load_persisted_mode(&persisted))
+    if (load_persisted_mode(&persisted))  // persisted mode stored in eeprom ?
     {
         if (persisted <= MODE_SLEEP)
         {
