@@ -62,6 +62,9 @@ void system_init(void)
     internal_storage_init();    
     settings_load();
 
+    DebugLn("Now trying Radio Init");
+    radio_init();
+    DebugLn("Radio Init successful");
     
 
     // TODO: BUG: RFM69 resets in RFM69_PowerUp.
