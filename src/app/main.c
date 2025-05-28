@@ -8,7 +8,7 @@
  * Der Haupt-Loop ruft kontinuierlich `state_process()` auf, um je nach Modus
  * (`MODE_OPERATIONAL`, `MODE_HIGH_TEMPERATURE`, etc.) den Gerätezustand abzuarbeiten.
  */
-
+#include <stdio.h>
 #include "app/state_machine.h"
 #include "periphery/tmp126.h"
 #include "periphery/mcp7940n.h"
@@ -54,18 +54,13 @@ void system_init(void)
 
     MCP7940N_Init(); ///< Realtime Clock initialisieren
     delay(100);
-    MCP7940N_SetTime(0, 0, 0);
 
     random_seed(0x1234); ///< Seed für Zufallsfunktionen setzen
                          // radio_init();        ///< RFM69 Funkmodul vorbereiten (z. B. Standby)
     Flash_Init();
-    internal_storage_init();    
+    internal_storage_init();
     settings_load();
-
-    DebugLn("Now trying Radio Init");
     radio_init();
-    DebugLn("Radio Init successful");
-    
 
     // TODO: BUG: RFM69 resets in RFM69_PowerUp.
 
@@ -80,43 +75,25 @@ void system_init(void)
  */
 void main(void)
 {
-
-    /* CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV8); // 2 MHz
-     CLK_PeripheralClockConfig(CLK_PERIPHERAL_I2C, ENABLE);
-     UART1_MyInit();
-     // SPI1_Init_Hard();
-     // SPI_Devices_Init();
-     I2C_Devices_Init();
-     DebugLn("Periphery Test - Init done...");
-
-     MCP7940N_Init();
-     delay(100);
-     DebugLn("MCP7940 Init complete");
-
-     while (1)
-     {
-         delay(100);
-     }*/
-
     system_init(); ///< Systemkomponenten initialisieren
-                   /*  state_init();  ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
-               
-                     while (1)
-                     {
-                         // watchdog_feed();    ///< TODO: Watchdog regelmäßig zurücksetzen
-                         state_process(); ///< Dispatcher-Funktion für aktuellen Modus
-                     }*/
+ //  state_init();  ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
 
     DebugLn("Finished system_init()");
-    char tbuf[64];
-    TMP126_OpenForMeasurement();
-    delay(100);
-    TMP126_Format_Temperature(tbuf);
-    TMP126_CloseForMeasurement();
-    DebugLn(tbuf);
 
+    char buf[20];
     while (1)
     {
-        delay(100);
+        uint8_t hour, min, sec;
+        MCP7940N_GetTime(&hour, &min, &sec);
+        DebugUVal("h:",hour,"");
+        DebugUVal("m:",min,"");
+        DebugUVal("s:",sec,"");
+
+        TMP126_OpenForMeasurement();
+        TMP126_Format_Temperature(buf);
+        TMP126_CloseForMeasurement();
+        DebugLn(buf);
+        
+        delay(5000); // 5 Sekunden
     }
 }
