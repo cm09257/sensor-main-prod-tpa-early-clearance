@@ -25,21 +25,55 @@ void storage_eeprom_unlock(void) // internal flash
     FLASH_Unlock(FLASH_MEMTYPE_DATA);
 }
 
-void storage_write_eeprom(uint16_t address, const uint8_t *data, uint16_t len) // internal flash
+void storage_write_eeprom(uint16_t address, const uint8_t *data, uint16_t len)
 {
-    DebugVal("[storage] Schreibe EEPROM @", address, "");
+    DebugLn("Manual EEPROM Unlock Test");
+
+    FLASH->CR2 |= FLASH_CR2_PRG;
+    FLASH->DUKR = 0xAE;
+    FLASH->DUKR = 0x56;
+
+    if (FLASH->IAPSR & FLASH_IAPSR_DUL)
+    {
+        DebugLn("EEPROM Unlock erfolgreich!");
+    }
+    else
+    {
+        DebugLn("EEPROM Unlock FEHLGESCHLAGEN!");
+    }
+
+    // EEPROM entsperren, falls nicht bereits passiert
+    if (!(FLASH->IAPSR & FLASH_IAPSR_DUL))
+    {
+        FLASH_Unlock(FLASH_MEMTYPE_DATA);
+        DebugLn("[EEPROM] Unlock durchgeführt");
+    }
+
     for (uint16_t i = 0; i < len; ++i)
     {
-        FLASH_ProgramByte(FLASH_DATA_START_PHYSICAL_ADDRESS + address + i, data[i]);
+        uint32_t target = FLASH_DATA_START_PHYSICAL_ADDRESS + address + i;
+        if (target > (FLASH_DATA_START_PHYSICAL_ADDRESS + 0x3FF))
+        {
+            DebugLn("[EEPROM] Schreibversuch außerhalb gültiger Adresse!");
+            break;
+        }
+
+        FLASH_ProgramByte(target, data[i]);
+
+        // auf Abschluss warten
+        while (!(FLASH->IAPSR & FLASH_IAPSR_EOP))
+            ;
     }
 }
 
 bool storage_read_eeprom(uint16_t address, uint8_t *data, uint16_t len) // internal flash
 {
+    DebugLn("In storage_read_eeprom");
     for (uint16_t i = 0; i < len; ++i)
     {
         data[i] = *(uint8_t *)(FLASH_DATA_START_PHYSICAL_ADDRESS + address + i);
     }
+    DebugLn("Finishing storage_read_eeprom");
     return TRUE;
 }
 
@@ -65,7 +99,7 @@ static uint8_t crc4_timestamp(uint32_t ts_5min)
 
 void persist_current_mode(mode_t mode) // internal flash
 {
-    DebugVal("[storage] Speichere Modus:", mode, "");
+    DebugUVal("[storage] Speichere Modus:", mode, "");
     uint8_t value = (uint8_t)mode;
     uint8_t crc = calc_crc8(value);
     storage_write_eeprom(EEPROM_ADDR_MODE, &value, 1);
@@ -80,7 +114,7 @@ bool load_persisted_mode(mode_t *out_mode) // internal flash
     if (calc_crc8(value) == crc)
     {
         *out_mode = (mode_t)value;
-        DebugVal("[storage] Geladener Modus:", value, "");
+        DebugUVal("[storage] Geladener Modus:", value, "");
         return TRUE;
     }
     DebugLn("[storage] CRC Fehler beim Laden des Modus");
@@ -106,7 +140,7 @@ bool load_device_id(uint8_t *out) // internal flash
 }
 
 bool store_device_id(const uint8_t *id) // internal flash
-{ 
+{
     uint8_t check[1];
     if (!storage_read_eeprom(EEPROM_ADDR_DEVICE_ID, check, 1))
     {
@@ -127,7 +161,7 @@ bool store_device_id(const uint8_t *id) // internal flash
 }
 
 bool flash_write_record(const record_t *rec) // external flash
-{ 
+{
     if (!rec)
         return FALSE;
 
@@ -149,9 +183,9 @@ bool flash_write_record(const record_t *rec) // external flash
     raw[4] = ((temp_fixed & 0x0F) << 4) | (rec->flags & 0x0F);
 
     DebugLn("[Flash] Schreibe Datensatz ins Flash");
-    DebugVal("-> Timestamp", ts, "");
-    DebugVal("-> Temp*16", temp_fixed, "");
-    DebugVal("-> Flags", rec->flags, "");
+    DebugUVal("-> Timestamp", ts, "");
+    DebugIVal("-> Temp*16", temp_fixed, "");
+    DebugUVal("-> Flags", rec->flags, "");
 
     bool ok = Flash_PageProgram(FLASH_ADDR_BASE + write_ptr, raw, RECORD_SIZE_BYTES);
 
@@ -170,7 +204,8 @@ bool flash_read_record(uint16_t index, record_t *out)
     if (!out || index >= MAX_RECORDS)
         return FALSE;
 
-    if (!Flash_Open()) {
+    if (!Flash_Open())
+    {
         DebugLn("[flash] Öffnen des Flash fehlgeschlagen");
         return FALSE;
     }
@@ -181,8 +216,9 @@ bool flash_read_record(uint16_t index, record_t *out)
 
     Flash_Close();
 
-    if (!ok) {
-        DebugVal("[flash] Lesen fehlgeschlagen bei Index ", index, "");
+    if (!ok)
+    {
+        DebugUVal("[flash] Lesen fehlgeschlagen bei Index ", index, "");
         return FALSE;
     }
 
@@ -191,7 +227,7 @@ bool flash_read_record(uint16_t index, record_t *out)
     uint8_t expected_crc = crc4_timestamp(ts);
     if ((expected_crc & 0x0F) != crc4)
     {
-        DebugVal("[flash] CRC4 Fehler bei Index ", index, "");
+        DebugUVal("[flash] CRC4 Fehler bei Index ", index, "");
         return FALSE;
     }
 
@@ -201,9 +237,9 @@ bool flash_read_record(uint16_t index, record_t *out)
     out->temperature = ((float)temp_fixed / 16.0f) - 50.0f;
     out->flags = raw[4] & 0x0F;
 
-    DebugVal("[flash] Gelesen: Timestamp", ts, "");
-    DebugVal("          Temp", (int)(out->temperature * 100), " x0.01C");
-    DebugVal("          Flags", out->flags, "");
+    DebugUVal("[flash] Gelesen: Timestamp", ts, "");
+    DebugIVal("          Temp", (int)(out->temperature * 100), " x0.01C");
+    DebugUVal("          Flags", out->flags, "");
 
     return TRUE;
 }
@@ -213,8 +249,10 @@ uint16_t flash_get_count(void)
     return (uint16_t)(write_ptr / RECORD_SIZE_BYTES);
 }
 
-bool flash_write_record_nolock(const record_t* rec) {
-    if (!rec) return FALSE;
+bool flash_write_record_nolock(const record_t *rec)
+{
+    if (!rec)
+        return FALSE;
 
     uint8_t raw[RECORD_SIZE_BYTES];
     uint32_t ts = rec->timestamp;
@@ -228,14 +266,13 @@ bool flash_write_record_nolock(const record_t* rec) {
     raw[4] = ((temp_fixed & 0x0F) << 4) | (rec->flags & 0x0F);
 
     DebugLn("[flash] Schreibe Datensatz ins Flash (no-lock)");
-    DebugVal("-> Timestamp", ts, "");
-    DebugVal("-> Temp*16", temp_fixed, "");
-    DebugVal("-> Flags", rec->flags, "");
+    DebugUVal("-> Timestamp", ts, "");
+    DebugIVal("-> Temp*16", temp_fixed, "");
+    DebugUVal("-> Flags", rec->flags, "");
 
     return Flash_PageProgram(FLASH_ADDR_BASE + write_ptr, raw, RECORD_SIZE_BYTES) &&
            ((write_ptr += RECORD_SIZE_BYTES), TRUE);
 }
-
 
 bool copy_internal_to_external_flash(void)
 {
@@ -246,9 +283,10 @@ bool copy_internal_to_external_flash(void)
         return TRUE;
     }
 
-    DebugVal("[copy] Anzahl zu kopierender Datensätze: ", total, "");
+    DebugUVal("[copy] Anzahl zu kopierender Datensätze: ", total, "");
 
-    if (!Flash_Open()) {
+    if (!Flash_Open())
+    {
         DebugLn("[copy] Flash konnte nicht geöffnet werden.");
         return FALSE;
     }
@@ -258,14 +296,14 @@ bool copy_internal_to_external_flash(void)
         record_t rec;
         if (!internal_flash_read_record(i, &rec))
         {
-            DebugVal("[copy] Fehler beim Lesen Index: ", i, "");
+            DebugUVal("[copy] Fehler beim Lesen Index: ", i, "");
             Flash_Close();
             return FALSE;
         }
 
-        if (!flash_write_record_nolock(&rec))  // Neue Funktion ohne open/close
+        if (!flash_write_record_nolock(&rec)) // Neue Funktion ohne open/close
         {
-            DebugVal("[copy] Fehler beim Schreiben ins externe Flash bei Index: ", i, "");
+            DebugUVal("[copy] Fehler beim Schreiben ins externe Flash bei Index: ", i, "");
             Flash_Close();
             return FALSE;
         }
@@ -275,4 +313,3 @@ bool copy_internal_to_external_flash(void)
     DebugLn("[copy] Alle internen Datensätze erfolgreich ins externe Flash kopiert!");
     return TRUE;
 }
-

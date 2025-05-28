@@ -44,7 +44,7 @@ timestamp_t rtc_get_timestamp(void)
 
 void rtc_set_alarm(rtc_alarm_t alarm, uint8_t hour, uint8_t minute, uint8_t second)
 {
-    DebugVal("[RTC] Setze Alarm", alarm, "");
+    DebugUVal("[RTC] Setze Alarm", alarm, "");
     char buf[20];
     sprintf(buf, "→ %02u:%02u:%02u", hour, minute, second);
     DebugLn(buf);
@@ -61,7 +61,7 @@ void rtc_set_alarm_in_minutes(rtc_alarm_t alarm, uint8_t delta_min)
     uint8_t new_m = (m + delta_min) % 60;
     uint8_t new_h = (h + (m + delta_min) / 60) % 24;
 
-    DebugVal("[RTC] Alarm in", delta_min, "min");
+    DebugUVal("[RTC] Alarm in", delta_min, "min");
     rtc_set_alarm(alarm, new_h, new_m, 0);
 }
 
@@ -95,7 +95,7 @@ void rtc_set_alarm_offset(rtc_alarm_t alarm, uint8_t offset_minutes, uint8_t off
 
 void rtc_clear_alarm(rtc_alarm_t alarm)
 {
-    DebugVal("[RTC] Lösche Alarm", alarm, "");
+    DebugUVal("[RTC] Lösche Alarm", alarm, "");
     MCP7940N_ClearAlarmFlagX(alarm);
     MCP7940N_DisableAlarmX(alarm);
 }
@@ -106,7 +106,7 @@ uint8_t rtc_was_alarm_triggered(rtc_alarm_t alarm)
         ? MCP7940N_IsAlarm0Triggered()
         : MCP7940N_IsAlarm1Triggered();
 
-    DebugVal("[RTC] Alarm ausgelöst?", result, "");
+    DebugUVal("[RTC] Alarm ausgelöst?", result, "");
     return result;
 }
 
@@ -120,7 +120,7 @@ static void rtc_set_alarm_periodic(uint8_t interval_min)
     h = (h + (next_min / 60)) % 24;
     next_min %= 60;
 
-    DebugVal("[RTC] Setze Periodic-Alarm (min)", interval_min, "");
+    DebugUVal("[RTC] Setze Periodic-Alarm (min)", interval_min, "");
     rtc_set_alarm(RTC_ALARM_0, h, next_min, 0);
 }
 
@@ -139,5 +139,5 @@ void rtc_set_unix_timestamp(uint32_t unix_time)
     uint8_t seconds = total_seconds % 60;
 
     MCP7940N_SetTime(hours, minutes, seconds);
-    DebugVal("[RTC] Zeit gesetzt auf (Unix)", (int)unix_time, "s");
+    DebugIVal("[RTC] Zeit gesetzt auf (Unix)", (int)unix_time, "s");
 }

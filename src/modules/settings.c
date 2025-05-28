@@ -3,6 +3,7 @@
 #include "modules/storage.h"
 #include <string.h>
 #include "stm8s.h"
+#include "periphery/uart.h"
 #include "utility/debug.h"
 
 #define SETTINGS_ADDR 0x30 // Startadresse im EEPROM
@@ -38,17 +39,18 @@ void settings_set_default(void)
     current_settings.device_id = 0xFFFFFFFF;                  // ungültige ID
     current_settings.cool_down_threshold = DEFAULT_COOL_DOWN_THRESHOLD;
 
-    DebugVal("  Intervall: ", current_settings.measurement_interval_5min, " x5min");
-    DebugVal("  HighTemp-Intervall: ", current_settings.high_temp_measurement_interval_5min, " x5min");
-    DebugVal("  Funk-Intervall-Faktor: ", current_settings.send_interval_factor, "");
-    DebugVal("  Device ID: ", current_settings.device_id, "");
-    DebugVal("  CoolDown-Schwelle: ", (int)(current_settings.cool_down_threshold * 10), " x0.1°C");
+    // DebugUVal("  Intervall: ", current_settings.measurement_interval_5min, " x5min");
+    // DebugUVal("  HighTemp-Intervall: ", current_settings.high_temp_measurement_interval_5min, " x5min");
+    // DebugUVal("  Funk-Intervall-Faktor: ", current_settings.send_interval_factor, "");
+    // DebugUVal("  Device ID: ", current_settings.device_id, "");
+    // DebugIVal("  CoolDown-Schwelle: ", (int)(current_settings.cool_down_threshold * 10), " x0.1°C");
 }
 
 void settings_load(void)
 {
     uint8_t raw[sizeof(settings_t)];
     uint8_t crc_stored = 0;
+
     storage_read_eeprom(SETTINGS_ADDR, raw, sizeof(settings_t));
     storage_read_eeprom(SETTINGS_CRC_ADDR, &crc_stored, 1);
 
@@ -57,21 +59,17 @@ void settings_load(void)
     if (crc_calc == crc_stored)
     {
         memcpy(&current_settings, raw, sizeof(settings_t));
-        DebugLn("[settings] EEPROM-Daten gültig → Einstellungen geladen");
 
-        // FA-6.3: einfache Validierung
         if (current_settings.measurement_interval_5min == 0 ||
             current_settings.send_interval_factor == 0 ||
             current_settings.high_temp_measurement_interval_5min == 0)
         {
-            DebugLn("[settings] Ungültige Werte → Fallback auf Default");
             settings_set_default();
             settings_save();
         }
     }
     else
     {
-        DebugLn("[settings] CRC ungültig → lade Defaults und speichere neu");
         settings_set_default();
         settings_save();
     }
@@ -81,10 +79,12 @@ void settings_save(void)
 {
     uint8_t raw[sizeof(settings_t)];
     memcpy(raw, &current_settings, sizeof(settings_t));
+
     uint8_t crc = calc_crc8(raw, sizeof(settings_t));
 
+    // EEPROM: zuerst die eigentlichen Daten speichern
     storage_write_eeprom(SETTINGS_ADDR, raw, sizeof(settings_t));
-    storage_write_eeprom(SETTINGS_CRC_ADDR, &crc, 1);
 
-    DebugLn("[settings] Einstellungen gespeichert");
+    // danach die CRC speichern
+    storage_write_eeprom(SETTINGS_CRC_ADDR, &crc, 1);
 }

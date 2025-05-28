@@ -21,7 +21,7 @@ void mode_high_temperature_run(void)
         TMP126_OpenForMeasurement();
         float temp = TMP126_ReadTemperatureCelsius();
         TMP126_CloseForMeasurement();
-        DebugVal("[HTEMP] Temperaturmessung: ", (int)(temp * 100), " x0.01°C");
+        DebugIVal("[HTEMP] Temperaturmessung: ", (int)(temp * 100), " x0.01°C");
 
         // b) Datensatz intern speichern
         record_t rec;
@@ -40,7 +40,7 @@ void mode_high_temperature_run(void)
 
         // c) Prüfen auf Unterschreiten der Abkühl-Schwelle
         float threshold = settings_get()->cool_down_threshold;
-        DebugVal("[HTEMP] Schwelle: ", (int)(threshold * 100), " x0.01°C");
+        DebugIVal("[HTEMP] Schwelle: ", (int)(threshold * 100), " x0.01°C");
 
         if (temp < threshold)
         {
@@ -55,7 +55,7 @@ void mode_high_temperature_run(void)
 
         // d) Nächste Messung planen
         uint8_t interval_min = settings_get()->high_temp_measurement_interval_5min * 5;
-        DebugVal("[HTEMP] Nächster Wakeup in ", interval_min, " Minuten");
+        DebugUVal("[HTEMP] Nächster Wakeup in ", interval_min, " Minuten");
 
         rtc_set_alarm_in_minutes(RTC_ALARM_0, interval_min);
 

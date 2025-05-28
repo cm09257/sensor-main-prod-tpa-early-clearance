@@ -24,7 +24,7 @@ void mode_wait_for_activation_run(void)
 
     while (state_get_current() == MODE_WAIT_FOR_ACTIVATION)
     {
-        DebugVal("[ACT] Sende Aktivierungs-Ping, Versuch", retry_count + 1, "");
+        DebugUVal("[ACT] Sende Aktivierungs-Ping, Versuch", retry_count + 1, "");
 
         // 1. Ping senden
         radio_send_ping(RADIO_PING_HEADER_ACTIVATION);

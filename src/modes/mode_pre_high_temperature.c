@@ -28,7 +28,7 @@ void mode_pre_high_temperature_run(void)
 
     float temp = sensor_read_temperature();
     int temp_int = (int)(temp * 100); // falls gewünscht: 2 Nachkommastellen
-    DebugVal("[PRE_HIGH_TEMP] Temperatur: ", temp_int, " x0.01 C");
+    DebugIVal("[PRE_HIGH_TEMP] Temperatur: ", temp_int, " x0.01 C");
 
     if (storage_internal_add_measurement(temp))
     {

@@ -20,7 +20,7 @@ void radio_init(void)
 
 radio_result_t radio_send_packet(const uint8_t *data, uint8_t len)
 {
-    DebugVal("[RADIO] Sende Paket mit Länge", len, " Bytes");
+    DebugUVal("[RADIO] Sende Paket mit Länge", len, " Bytes");
 
     if (!RFM69_open())
     {
@@ -70,17 +70,17 @@ radio_result_t radio_send_data(const record_t *records, uint8_t count, const uin
     uint8_t packet[MAX_UPLINK_PACKET_SIZE];
     uint8_t len = uplink_build_packet(records, count, device_id, seq_nr, packet);
 
-    DebugVal("[RADIO] Sende Datenuplink, SeqNr:", seq_nr, "");
+    DebugUVal("[RADIO] Sende Datenuplink, SeqNr:", seq_nr, "");
 
     for (uint8_t attempt = 0; attempt < MAX_RADIO_ATTEMPTS; ++attempt)
     {
-        DebugVal("→ Sende Versuch", attempt + 1, "");
+        DebugUVal("-> Sende Versuch", attempt + 1, "");
         if (radio_send_packet(packet, len) == RADIO_ACK_RECEIVED)
         {
             return RADIO_ACK_RECEIVED;
         }
         uint16_t delay_ms = random16() % MAX_RESEND_DELAY_MS;
-        DebugVal("→ Wartezeit vor erneutem Versuch", delay_ms, " ms");
+        DebugUVal("-> Wartezeit vor erneutem Versuch", delay_ms, " ms");
         delay(delay_ms);
     }
 
@@ -96,7 +96,7 @@ radio_result_t radio_send_ping(uint8_t ping_type)
 
     for (uint8_t attempt = 0; attempt < MAX_PING_RETRIES; ++attempt)
     {
-        DebugVal("→ Ping-Versuch", attempt + 1, "");
+        DebugUVal("-> Ping-Versuch", attempt + 1, "");
         radio_result_t result = radio_send_packet(ping_packet, sizeof(ping_packet));
 
         switch (result)
@@ -144,7 +144,7 @@ bool radio_receive_for_activation(void)
         return FALSE;
     }
 
-    DebugVal("Empfangenes Paket, Länge: ", length, " Bytes");
+    DebugUVal("Empfangenes Paket, Länge: ", length, " Bytes");
 
     if (length < 7)
     {
@@ -239,8 +239,8 @@ bool radio_receive_downlink(uint8_t *cmd, uint8_t *payload, uint8_t *length)
     *length = len - 2;
     memcpy(payload, &buffer[2], *length);
 
-    DebugVal("[RADIO] Downlink CMD:", *cmd, "");
-    DebugVal("[RADIO] Payload-Länge:", *length, "");
+    DebugUVal("[RADIO] Downlink CMD:", *cmd, "");
+    DebugUVal("[RADIO] Payload-Länge:", *length, "");
 
     return TRUE;
 }

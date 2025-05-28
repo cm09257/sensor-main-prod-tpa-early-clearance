@@ -29,7 +29,7 @@ void mode_operational_run(void)
         return;
     }
 
-    DebugVal("[OPERATIONAL] Gemessene Temperatur: ", (int)(temp_c * 100), " x0.01°C");
+    DebugIVal("[OPERATIONAL] Gemessene Temperatur: ", (int)(temp_c * 100), " x0.01°C");
 
     timestamp_t ts = rtc_get_timestamp();
     Debug("[OPERATIONAL] Zeitstempel: ");
@@ -53,11 +53,11 @@ void mode_operational_run(void)
 
     // Zähler erhöhen
     wakeup_counter++;
-    DebugVal("[OPERATIONAL] Wakeup-Zähler: ", wakeup_counter, "");
+    DebugUVal("[OPERATIONAL] Wakeup-Zähler: ", wakeup_counter, "");
 
     // Konfiguration abrufen
     const settings_t *cfg = settings_get();
-    DebugVal("[OPERATIONAL] Sendefaktor: ", cfg->send_interval_factor, "");
+    DebugUVal("[OPERATIONAL] Sendefaktor: ", cfg->send_interval_factor, "");
 
     if ((wakeup_counter % cfg->send_interval_factor) == 0)
     {

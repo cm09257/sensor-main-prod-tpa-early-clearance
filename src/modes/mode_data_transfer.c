@@ -24,7 +24,7 @@ static bool perform_handshake_and_timesync(void)
     if (radio_receive_downlink(&cmd, payload, &len) && cmd == CMD_SET_RTC_OFFSET && len == 4) {
         uint32_t ts = *(uint32_t*)payload;
         rtc_set_unix_timestamp(ts);
-        DebugVal("[DT] RTC synchronisiert auf ", ts, " Sekunden seit 1970");
+        DebugUVal("[DT] RTC synchronisiert auf ", ts, " Sekunden seit 1970");
     }
     return TRUE;
 }
@@ -40,7 +40,7 @@ static bool send_next_packet(const settings_t* cfg, uint16_t* index, uint8_t* se
     {
         if (!flash_read_record(*index, &buffer[count]))
         {
-            DebugVal("[DT] Fehler beim Lesen @ Index ", *index, "");
+            DebugUVal("[DT] Fehler beim Lesen @ Index ", *index, "");
             return FALSE;
         }
         count++;
@@ -49,16 +49,16 @@ static bool send_next_packet(const settings_t* cfg, uint16_t* index, uint8_t* se
 
     if (count == 0)
     {
-        DebugLn("[DT] Keine Daten geladen – Abbruch");
+        DebugLn("[DT] Keine Daten geladen -> Abbruch");
         return FALSE;
     }
 
-    DebugVal("[DT] Sende Paket mit ", count, " Datensätzen");
+    DebugUVal("[DT] Sende Paket mit ", count, " Datensätzen");
 
     radio_result_t result = radio_send_data(buffer, count, (uint8_t*)&cfg->device_id, *seq_nr);
     if (result == RADIO_ACK_RECEIVED)
     {
-        DebugLn("[DT] ACK erhalten – nächstes Paket");
+        DebugLn("[DT] ACK erhalten -> nächstes Paket");
         (*seq_nr)++;
         return TRUE;
     }
@@ -69,7 +69,7 @@ static bool send_next_packet(const settings_t* cfg, uint16_t* index, uint8_t* se
 
         for (uint8_t attempt = 1; attempt <= MAX_NACK_RETRIES; ++attempt)
         {
-            DebugVal("[DT] NACK-Retry Nr. ", attempt, "");
+            DebugUVal("[DT] NACK-Retry Nr. ", attempt, "");
             result = radio_send_data(buffer, count, (uint8_t*)&cfg->device_id, *seq_nr);
 
             if (result == RADIO_ACK_RECEIVED)
@@ -107,7 +107,7 @@ void mode_data_transfer_run(void)
     }
 
     uint16_t total = flash_get_count();
-    DebugVal("[DT] Anzahl gespeicherter Datensätze: ", total, "");
+    DebugUVal("[DT] Anzahl gespeicherter Datensätze: ", total, "");
     if (total == 0)
     {
         DebugLn("[DT] Keine Daten zu übertragen");

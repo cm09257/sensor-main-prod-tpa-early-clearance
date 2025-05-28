@@ -43,7 +43,7 @@ void state_init(void)
         if (persisted <= MODE_SLEEP)
         {
             current_mode = persisted;
-            DebugVal("Start in gespeicherten Modus", current_mode, "");
+            DebugUVal("Start in gespeicherten Modus", current_mode, "");
         }
         else
         {
