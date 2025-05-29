@@ -5,6 +5,7 @@
 #include "modes/mode_pre_high_temperature.h"
 #include "modules/settings.h"
 #include "modules/storage_internal.h"
+#include "modules/rtc.h"
 #include "periphery/tmp126.h"
 #include "utility/delay.h"
 
@@ -30,37 +31,73 @@ void TMP126_DebugWakePin(void)
 void mode_pre_high_temperature_run(void)
 {
     Debug("=== Mode PRE_HIGH_TEMP] ===");
-    if (!TMP126_OpenForAlert())
-    {
-        DebugLn("[PRE_HIGH_TEMP] Oeffnen des TMP126 für Alert fehlgeschlagen");
-        state_transition(MODE_SLEEP);
-        return;
-    }
-    // Alarmgrenze setzen
 
+    TMP126_OpenForAlert(); // Set mode for using alert functions of tmp126
+
+    uint16_t alertStatus = TMP126_ReadAlertStatus(); // Read Alert Status clears all alert flags
+    delay(5);
+    TMP126_SetHysteresis(1.0f); // Set Hysteresis to 1K
+    delay(5);
+    TMP126_SetHiLimit(27.0f);
+    delay(5);
+    TMP126_SetLoLimit(-60.0f);
+
+    TMP126_Enable_THigh_Alert();
+    delay(5);
+    TMP126_Disable_TLow_Alert();
+    delay(5);
+    DebugLn(TMP126_Is_THigh_Enabled() ? "THi Alert Enabled" : "THi Alert Disabled");
+    delay(5);
+    DebugLn(TMP126_Is_TLow_Enabled() ? "TLo Alert Enabled" : "TLo Alert Disabled");
+    delay(5);
+
+    GPIO_Init(TMP126_WAKE_PORT, TMP126_WAKE_PIN, GPIO_MODE_IN_PU_IT); // WAKE_TMP as input
+
+    uint8_t h, m, s;
+    char buf[64];
+
+    while (1)
+    {
+        uint8_t current_pe5 = GPIO_ReadInputPin(TMP126_WAKE_PORT, TMP126_WAKE_PIN);
+        rtc_get_time(&h, &m, &s);
+        sprintf(buf, "[%02u:%02u:%02u] PE5 = %s", h, m, s, current_pe5 ? "HIGH" : "LOW");
+        DebugLn(buf);
+
+        TMP126_Format_Temperature(buf);
+        DebugLn(buf);
+    }
+
+    /* if (!TMP126_OpenForAlert())
+     {
+         DebugLn("[PRE_HIGH_TEMP] Oeffnen des TMP126 für Alert fehlgeschlagen");
+         state_transition(MODE_SLEEP);
+         return;
+     }*/
+    // Alarmgrenze setzen
+/*
     DebugUVal("[PRE_HIGH_TEMP] Setting Hi Temp Threshold to ", PRE_HIGH_TEMP_THRESHOLD_C, "degC");
     TMP126_SetHiLimit(19); // TMP126_SetHiLimit(PRE_HIGH_TEMP_THRESHOLD_C);
     TMP126_SetLoLimit(-60);
     float read_hi_temp_float = TMP126_ReadHiLimit();
     float read_lo_temp_float = TMP126_ReadLoLimit();
 
- //   DebugFVal("[PRE_HIGH_TEMP] Readout high threshold = ", read_hi_temp_float, "degC");
+    //   DebugFVal("[PRE_HIGH_TEMP] Readout high threshold = ", read_hi_temp_float, "degC");
     DebugFVal("[PRE_HIGH_TEMP] Readout low  threshold = ", read_lo_temp_float, "degC");
 
     TMP126_Enable_THigh_Alert();
     TMP126_Disable_TLow_Alert();
+    /*
+        if (TMP126_Is_THigh_Enabled())
+            DebugLn("[PRE_HIGH_TEMP] THigh Alert is Enabled.");
+        else
+            DebugLn("[PRE_HIGH_TEMP] THigh Alert is Disabled.");
+
+        if (TMP126_Is_TLow_Enabled())
+            DebugLn("[PRE_HIGH_TEMP] TLow Alert is Enabled.");
+        else
+            DebugLn("[PRE_HIGH_TEMP] TLow Alert is Disabled.");
+            */
 /*
-    if (TMP126_Is_THigh_Enabled())
-        DebugLn("[PRE_HIGH_TEMP] THigh Alert is Enabled.");
-    else
-        DebugLn("[PRE_HIGH_TEMP] THigh Alert is Disabled.");
-
-    if (TMP126_Is_TLow_Enabled())
-        DebugLn("[PRE_HIGH_TEMP] TLow Alert is Enabled.");
-    else
-        DebugLn("[PRE_HIGH_TEMP] TLow Alert is Disabled.");
-        */
-
     uint16_t alarm_status = TMP126_ReadAlertStatus();
     DebugUVal("[PRE_HIGH_TEMP] Alert Status Register (dec. value) =", alarm_status, "");
     uint16_t configuation = TMP126_ReadConfigurationRaw();
@@ -73,7 +110,7 @@ void mode_pre_high_temperature_run(void)
     DebugLn(buf);
 
     TMP126_DebugWakePin();
-
+*/
 #ifdef PRE_HIGH_TEMP_MEASURE
     DebugLn("[PRE_HIGH_TEMP] Zyklische Messung aktiv");
 
@@ -92,6 +129,7 @@ void mode_pre_high_temperature_run(void)
 
     state_set_mode(MODE_SLEEP);
 #else
+/*
     DebugLn("[PRE_HIGH_TEMP] Warte auf TMP126 Alert (EXTI)");
     TMP126_DebugWakePin();
 
@@ -106,5 +144,6 @@ void mode_pre_high_temperature_run(void)
     {
         state_transition(MODE_SLEEP);
     }
+        */
 #endif
 }
