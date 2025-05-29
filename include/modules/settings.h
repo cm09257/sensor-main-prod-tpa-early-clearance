@@ -26,7 +26,7 @@
 
 
 /// Schwelle für den Übergang in den HIGH_TEMPERATURE-Modus (°C)
-#define PRE_HIGH_TEMP_THRESHOLD_C 100.0f
+#define PRE_HIGH_TEMP_THRESHOLD_C 28.0f
 
 
 // === Wiederholstrategien ===

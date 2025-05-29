@@ -3,6 +3,7 @@
 #include "common/types.h"
 #include "periphery/flash.h"
 #include "utility/debug.h"
+#include "utility/delay.h"
 #include "stm8s_flash.h"
 #include <string.h>
 
@@ -27,7 +28,7 @@ void storage_eeprom_unlock(void) // internal flash
 
 void storage_write_eeprom(uint16_t address, const uint8_t *data, uint16_t len)
 {
-    DebugLn("Manual EEPROM Unlock Test");
+   // DebugLn("Manual EEPROM Unlock Test");
 
     FLASH->CR2 |= FLASH_CR2_PRG;
     FLASH->DUKR = 0xAE;
@@ -35,7 +36,8 @@ void storage_write_eeprom(uint16_t address, const uint8_t *data, uint16_t len)
 
     if (FLASH->IAPSR & FLASH_IAPSR_DUL)
     {
-        DebugLn("EEPROM Unlock erfolgreich!");
+       // DebugLn("EEPROM Unlock erfolgreich!");
+       delay(1);
     }
     else
     {
@@ -46,7 +48,7 @@ void storage_write_eeprom(uint16_t address, const uint8_t *data, uint16_t len)
     if (!(FLASH->IAPSR & FLASH_IAPSR_DUL))
     {
         FLASH_Unlock(FLASH_MEMTYPE_DATA);
-        DebugLn("[EEPROM] Unlock durchgeführt");
+      //  DebugLn("[EEPROM] Unlock durchgeführt");
     }
 
     for (uint16_t i = 0; i < len; ++i)
@@ -97,7 +99,7 @@ static uint8_t crc4_timestamp(uint32_t ts_5min)
 
 void persist_current_mode(mode_t mode) // internal flash
 {
-    DebugUVal("[storage] Speichere Modus:", mode, "");
+    //DebugUVal("[storage] Speichere Modus:", mode, "");
     uint8_t value = (uint8_t)mode;
     uint8_t crc = calc_crc8(value);
     storage_write_eeprom(EEPROM_ADDR_MODE, &value, 1);
@@ -112,7 +114,7 @@ bool load_persisted_mode(mode_t *out_mode) // internal flash
     if (calc_crc8(value) == crc)
     {
         *out_mode = (mode_t)value;
-        DebugUVal("[storage] Geladener Modus:", value, "");
+      //  DebugUVal("[storage] Geladener Modus:", value, "");
         return TRUE;
     }
     DebugLn("[storage] CRC Fehler beim Laden des Modus");

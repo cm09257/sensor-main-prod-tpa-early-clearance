@@ -67,6 +67,10 @@ void state_process(void);
  */
 void state_transition(mode_t new_mode);
 
+void set_mode_debug_only(mode_t new_mode); // Debug-only function
+
+
+
 /**
  * @brief Gibt den aktuell aktiven Modus zurück.
  * 

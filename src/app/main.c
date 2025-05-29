@@ -20,6 +20,7 @@
 #include "modules/settings.h"
 #include "modules/storage_internal.h"
 #include "modules/storage.h"
+#include "modules/rtc.h"
 #include "utility/debug.h"
 #include "utility/debug_menu.h"
 #include "utility/delay.h"
@@ -58,9 +59,9 @@ void system_init(void)
 
     Flash_Init();
     internal_storage_init();
-    //settings_set_default();
-    //settings_save();
-    //persist_current_mode(MODE_TEST);
+    // settings_set_default();
+    // settings_save();
+    persist_current_mode(MODE_TEST);
 
     settings_load(); //  ///< Geräteeinstellungen (EEPROM) laden
     radio_init();    ///< RFM69 Funkmodul vorbereiten (z. B. Standby)
@@ -77,29 +78,33 @@ void main(void)
     system_init(); ///< Systemkomponenten initialisieren
     DebugLn("[sensor-main] Finished system_init()");
 
-    state_init();     ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
-    DebugMenu_Init(); // Show Debug Menu
+    state_init(); ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
+                  // DebugMenu_Init(); // Show Debug Menu
 
+   // DebugLn("[sensor-main] Going into mode MODE_PRE_HIGH_TEMP");
+    set_mode_debug_only(MODE_PRE_HIGH_TEMP);
+   // DebugLn("[sensor-main] MODE_PRE_HIGH_TEMP set.");
     while (1)
     {
+ //       DebugLn("[sensor-main] In main while-loop.");
         state_process();
-        DebugMenu_Update();
+        // DebugMenu_Update();
     }
-/*
-    char buf[20];
-    while (1)
-    {
-        uint8_t hour, min, sec;
-        MCP7940N_GetTime(&hour, &min, &sec);
-        DebugUVal("h:", hour, "");
-        DebugUVal("m:", min, "");
-        DebugUVal("s:", sec, "");
+    /*
+        char buf[20];
+        while (1)
+        {
+            uint8_t hour, min, sec;
+            MCP7940N_GetTime(&hour, &min, &sec);
+            DebugUVal("h:", hour, "");
+            DebugUVal("m:", min, "");
+            DebugUVal("s:", sec, "");
 
-        TMP126_OpenForMeasurement();
-        TMP126_Format_Temperature(buf);
-        TMP126_CloseForMeasurement();
-        DebugLn(buf);
+            TMP126_OpenForMeasurement();
+            TMP126_Format_Temperature(buf);
+            TMP126_CloseForMeasurement();
+            DebugLn(buf);
 
-        delay(5000); // 5 Sekunden
-    }*/
+            delay(5000); // 5 Sekunden
+        }*/
 }

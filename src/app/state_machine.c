@@ -7,6 +7,8 @@
  */
 
 #include "stm8s.h"
+#include "stm8s_gpio.h"
+#include "periphery/hardware_resources.h"
 #include "app/state_machine.h"
 #include "modules/radio.h"
 #include "modules/settings.h"
@@ -17,6 +19,7 @@
 #include "utility/debug.h"
 #include "utility/random.h"
 #include "periphery/power.h"
+#include "periphery/tmp126.h"
 #include "production/production_test.h"
 #include "modes/mode_test.h"
 #include "modes/mode_operational.h"
@@ -24,7 +27,6 @@
 #include "modes/mode_pre_high_temperature.h"
 #include "modes/mode_wait_for_activation.h"
 #include "modes/mode_high_temperature.h"
-
 
 // === Initialisierung ===
 
@@ -38,7 +40,7 @@ void state_init(void)
 {
     mode_t persisted;
 
-    if (load_persisted_mode(&persisted))  // persisted mode stored in eeprom ?
+    if (load_persisted_mode(&persisted)) // persisted mode stored in eeprom ?
     {
         if (persisted <= MODE_SLEEP)
         {
@@ -71,6 +73,9 @@ void state_init(void)
  */
 void state_process(void)
 {
+    
+ //   DebugLn("[sensor-main-state-machine] In state_process.");
+ //   DebugUVal("[sensor-main-state-machine] current_mode = ",current_mode,"");
     switch (current_mode)
     {
     case MODE_TEST:
@@ -78,7 +83,7 @@ void state_process(void)
         break;
 
     case MODE_WAIT_FOR_ACTIVATION:
-        mode_wait_for_activation_run();
+ //       mode_wait_for_activation_run();
         break;
 
     case MODE_PRE_HIGH_TEMP:
@@ -98,7 +103,12 @@ void state_process(void)
         break;
 
     case MODE_SLEEP:
-        power_enter_halt(); // verlässt Funktion erst nach Wakeup
+        DebugLn("Enter Mode Sleep");
+        while(1)
+        {
+            delay(50);
+        }
+        //power_enter_halt(); // verlässt Funktion erst nach Wakeup
         break;
     }
 
@@ -108,6 +118,12 @@ void state_process(void)
         mode_transition_pending = FALSE;
         // Optional: Debug-Ausgabe oder Ereignislog
     }
+}
+
+void set_mode_debug_only(mode_t new_mode)
+{
+    DebugUVal("[sensor-main-state-machine] Debug-Only setting of mode to ", new_mode, "");
+    current_mode = new_mode;
 }
 
 // === Moduswechsel ===
