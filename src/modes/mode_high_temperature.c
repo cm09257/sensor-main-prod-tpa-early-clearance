@@ -21,7 +21,7 @@ void mode_high_temperature_run(void)
         TMP126_OpenForMeasurement();
         float temp = TMP126_ReadTemperatureCelsius();
         TMP126_CloseForMeasurement();
-        DebugIVal("[HTEMP] Temperaturmessung: ", (int)(temp * 100), " x0.01°C");
+        DebugFVal("[HTEMP] Temperaturmessung: ", (int)(temp * 100), " x0.01°C");
 
         // b) Datensatz intern speichern
         record_t rec;
@@ -36,6 +36,14 @@ void mode_high_temperature_run(void)
         else
         {
             DebugLn("[HTEMP] Datensatz gespeichert");
+            record_t validation_read_record;
+            if(internal_flash_read_record(0, &validation_read_record))
+            {             
+                DebugLn("Re-Read from internal flash successful");
+                DebugUVal("Validation timestamp = ", validation_read_record.timestamp, "x 5min");
+                DebugUVal("Validation temperature = ", validation_read_record.temperature, "degC");
+                DebugUVal("Validation data ok flag = ", validation_read_record.flags, "(1=ok)");
+            }
         }
 
         // c) Prüfen auf Unterschreiten der Abkühl-Schwelle

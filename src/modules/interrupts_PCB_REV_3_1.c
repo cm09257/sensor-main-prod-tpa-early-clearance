@@ -3,7 +3,7 @@
 #include "stm8s_itc.h"
 #include "stm8s_gpio.h"
 #include "app/state_machine.h"
-#include "modules/interrupts_PCB_REV_2_5.h"
+#include "modules/interrupts_PCB_REV_3_1.h"
 #include "modes/mode_pre_high_temperature.h" // ALERT-Flag
 #include "periphery/power.h"
 #include "periphery/hardware_resources.h"
@@ -12,10 +12,11 @@
 #include "utility/delay.h"
 #include "periphery/tmp126.h"
 
-#if defined(PCB_REV_2_5)
+#if defined(PCB_REV_3_1)
+
 // === RTC Wakeup ISR ===
 
-INTERRUPT_HANDLER(EXTI_PORT_A_IRQHandler, PORT_A_INTERRUPT_VECTOR) // RTC_WAKE = PA3
+INTERRUPT_HANDLER(EXTI_PORT_D_IRQHandler, PORT_D_INTERRUPT_VECTOR) // RTC_WAKE = PD2
 {
     bool triggered_0 = MCP7940N_IsAlarm0Triggered(); // rtc_was_alarm_triggered(RTC_ALARM_0);
     bool triggered_1 = MCP7940N_IsAlarm1Triggered(); //(RTC_ALARM_1);
@@ -55,7 +56,7 @@ INTERRUPT_HANDLER(EXTI_PORT_A_IRQHandler, PORT_A_INTERRUPT_VECTOR) // RTC_WAKE =
         state_transition(MODE_OPERATIONAL);
 }
 
-INTERRUPT_HANDLER(EXTI_PORT_E_IRQHandler, PORT_E_INTERRUPT_VECTOR) // TMP126 ALERT = PE5
+INTERRUPT_HANDLER(EXTI_PORT_C_IRQHandler, PORT_C_INTERRUPT_VECTOR) // TMP126 ALERT = PE5
 {    
     pre_hi_temp_alert_triggered = TRUE;
 }

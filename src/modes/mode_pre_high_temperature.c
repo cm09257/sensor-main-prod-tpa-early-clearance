@@ -7,7 +7,11 @@
 #include "modules/settings.h"
 #include "modules/storage_internal.h"
 #include "modules/rtc.h"
+#if defined(PCB_REV_2_5)
 #include "modules/interrupts_PCB_REV_2_5.h"
+#elif defined(PCB_REV_3_1)
+#include "modules/interrupts_PCB_REV_3_1.h"
+#endif
 #include "periphery/tmp126.h"
 #include "utility/delay.h"
 
@@ -77,6 +81,7 @@ void mode_pre_high_temperature_run(void)
 
             DebugLn("======================== Hi Alert Triggered ===");
             state_transition(MODE_HIGH_TEMPERATURE);
+            TMP126_CloseForAlert();
             break;
         }
 
