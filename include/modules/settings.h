@@ -22,11 +22,11 @@
 // === Defaultwerte ===
 
 /// Schwelle für das Beenden des HIGH_TEMPERATURE-Modus (°C)
-#define DEFAULT_COOL_DOWN_THRESHOLD 50.0f   
+#define DEFAULT_COOL_DOWN_THRESHOLD 23.0f   
 
 
 /// Schwelle für den Übergang in den HIGH_TEMPERATURE-Modus (°C)
-#define PRE_HIGH_TEMP_THRESHOLD_C 28.0f
+#define PRE_HIGH_TEMP_THRESHOLD_C 27.0f
 
 
 // === Wiederholstrategien ===

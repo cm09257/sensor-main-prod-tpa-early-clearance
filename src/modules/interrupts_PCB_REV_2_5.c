@@ -1,20 +1,23 @@
 #include "stm8s.h"
+#include "stm8s_exti.h"
+#include "stm8s_itc.h"
+#include "stm8s_gpio.h"
 #include "app/state_machine.h"
+#include "modules/interrupts_PCB_REV_2_5.h"
 #include "modes/mode_pre_high_temperature.h" // ALERT-Flag
 #include "periphery/power.h"
 #include "periphery/hardware_resources.h"
 #include "periphery/mcp7940n.h"
 #include "utility/debug.h"
+#include "utility/delay.h"
+#include "periphery/tmp126.h"
+
+#define EXTI_SR1 *(volatile uint8_t *)0x50A0
+#define EXTI_SR2 *(volatile uint8_t *)0x50A1
 
 // === RTC Wakeup ISR ===
 
-#if defined(PCB_REV_1_1)
-INTERRUPT_HANDLER(EXTI1_IRQHandler, 5) // RTC_WAKE = PA1
-#elif defined(PCB_REV_2_5)
-INTERRUPT_HANDLER(EXTI3_IRQHandler, 9) // RTC_WAKE = PA3
-#else
-#error "Unbekannter RTC-Wake-Pin: kein EXTI-Handler definiert"
-#endif
+INTERRUPT_HANDLER(EXTI_PORT_A_IRQHandler, PORT_A_INTERRUPT_VECTOR) // RTC_WAKE = PA3
 {
     bool triggered_0 = MCP7940N_IsAlarm0Triggered(); // rtc_was_alarm_triggered(RTC_ALARM_0);
     bool triggered_1 = MCP7940N_IsAlarm1Triggered(); //(RTC_ALARM_1);
@@ -54,16 +57,7 @@ INTERRUPT_HANDLER(EXTI3_IRQHandler, 9) // RTC_WAKE = PA3
         state_transition(MODE_OPERATIONAL);
 }
 
-// === TMP126 Temperatur-IRQ (Temperaturgrenze überschritten) ===
-
-#if defined(PCB_REV_1_1)
-INTERRUPT_HANDLER(EXTI2_IRQHandler, 7) // TMP126 ALERT = PA2
-#elif defined(PCB_REV_2_5)
-INTERRUPT_HANDLER(EXTI5_IRQHandler, 13) // TMP126 ALERT = PE5
-#else
-#error "Unbekannter TMP_WAKE-Pin: kein EXTI-Handler definiert"
-#endif
-{
-    DebugLn("[TMP126] Wakeup durch Temperaturalarm");
+INTERRUPT_HANDLER(EXTI_PORT_E_IRQHandler, PORT_E_INTERRUPT_VECTOR) // TMP126 ALERT = PE5
+{    
     pre_hi_temp_alert_triggered = TRUE;
 }
