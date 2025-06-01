@@ -50,9 +50,9 @@ void system_init(void)
     I2C_Devices_Init();
     TMP126_init(); // TMP126 initialisieren.
     delay(100);
-    global_power_save();
-
     MCP7940N_Init(); ///< Realtime Clock initialisieren
+    
+    global_power_save();
     delay(100);
 
     random_seed(0x1234); ///< Seed für Zufallsfunktionen setzen
@@ -81,12 +81,12 @@ void main(void)
     state_init(); ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
                   // DebugMenu_Init(); // Show Debug Menu
 
-   // DebugLn("[sensor-main] Going into mode MODE_PRE_HIGH_TEMP");
+    // DebugLn("[sensor-main] Going into mode MODE_PRE_HIGH_TEMP");
     set_mode_debug_only(MODE_PRE_HIGH_TEMP);
-   // DebugLn("[sensor-main] MODE_PRE_HIGH_TEMP set.");
+    // DebugLn("[sensor-main] MODE_PRE_HIGH_TEMP set.");
     while (1)
     {
- //       DebugLn("[sensor-main] In main while-loop.");
+        //       DebugLn("[sensor-main] In main while-loop.");
         state_process();
         // DebugMenu_Update();
     }

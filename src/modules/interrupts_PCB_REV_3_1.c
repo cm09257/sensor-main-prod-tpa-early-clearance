@@ -18,6 +18,7 @@
 
 INTERRUPT_HANDLER(EXTI_PORT_D_IRQHandler, PORT_D_INTERRUPT_VECTOR) // RTC_WAKE = PD2
 {
+  
     bool triggered_0 = MCP7940N_IsAlarm0Triggered(); // rtc_was_alarm_triggered(RTC_ALARM_0);
     bool triggered_1 = MCP7940N_IsAlarm1Triggered(); //(RTC_ALARM_1);
 
@@ -25,7 +26,7 @@ INTERRUPT_HANDLER(EXTI_PORT_D_IRQHandler, PORT_D_INTERRUPT_VECTOR) // RTC_WAKE =
     MCP7940N_ClearAlarmFlagX(0); // in ISR
     MCP7940N_DisableAlarmX(1);   // immediately disable and clear alarms
     MCP7940N_ClearAlarmFlagX(1); // in ISR
-
+/*
     Debug("Wakeup durch Alarm: ");
     if (triggered_0)
         Debug("ALM0 ");
@@ -54,10 +55,12 @@ INTERRUPT_HANDLER(EXTI_PORT_D_IRQHandler, PORT_D_INTERRUPT_VECTOR) // RTC_WAKE =
 
     if (mode_before_halt == MODE_SLEEP || state_get_current() == MODE_SLEEP)
         state_transition(MODE_OPERATIONAL);
+
+        */
 }
 
 INTERRUPT_HANDLER(EXTI_PORT_C_IRQHandler, PORT_C_INTERRUPT_VECTOR) // TMP126 ALERT = PE5
-{    
+{   
     pre_hi_temp_alert_triggered = TRUE;
 }
 #endif

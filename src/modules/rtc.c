@@ -3,6 +3,7 @@
 #include "stm8s_exti.h"
 #include "stm8s_gpio.h"
 #include "utility/debug.h"
+#include "utility/delay.h"
 #include "periphery/hardware_resources.h"
 
 static void rtc_enable_exti(void)
@@ -19,13 +20,17 @@ void rtc_init(void)
     rtc_enable_exti();
 }
 
-void rtc_get_time(uint8_t* hour, uint8_t* minute, uint8_t* second)
+void rtc_get_time(uint8_t *hour, uint8_t *minute, uint8_t *second)
 {
+    //  DebugLn("In rtc_get_time");
+    delay(5);
     MCP7940N_GetTime(hour, minute, second);
-    //Debug("[RTC] Aktuelle Uhrzeit: ");
- //   char buf[16];
-   // sprintf(buf, "%02u:%02u:%02u", *hour, *minute, *second);
-  //  DebugLn(buf);
+    delay(5);
+    //  DebugLn("Leaving rtc_get_time");
+    // Debug("[RTC] Aktuelle Uhrzeit: ");
+    //   char buf[16];
+    // sprintf(buf, "%02u:%02u:%02u", *hour, *minute, *second);
+    //  DebugLn(buf);
 }
 
 timestamp_t rtc_get_timestamp(void)
@@ -44,13 +49,14 @@ timestamp_t rtc_get_timestamp(void)
 
 void rtc_set_alarm(rtc_alarm_t alarm, uint8_t hour, uint8_t minute, uint8_t second)
 {
-    DebugUVal("[RTC] Setze Alarm", alarm, "");
-    char buf[20];
-    sprintf(buf, "→ %02u:%02u:%02u", hour, minute, second);
-    DebugLn(buf);
-
-    MCP7940N_ConfigureAbsoluteAlarmX(alarm, hour, minute, second);    
-    MCP7940N_EnableAlarmX(alarm);
+    // DebugUVal("[RTC] Setze Alarm", alarm, "");
+    // char buf[20];
+    // sprintf(buf, "-> %02u:%02u:%02u", hour, minute, second);
+    // DebugLn(buf);
+    delay(5);
+    MCP7940N_ConfigureAbsoluteAlarmX(alarm, hour, minute, second);
+    DebugLn("Configured abs alarm");
+    delay(5);
 }
 
 void rtc_set_alarm_in_minutes(rtc_alarm_t alarm, uint8_t delta_min)
@@ -103,8 +109,8 @@ void rtc_clear_alarm(rtc_alarm_t alarm)
 uint8_t rtc_was_alarm_triggered(rtc_alarm_t alarm)
 {
     uint8_t result = (alarm == RTC_ALARM_0)
-        ? MCP7940N_IsAlarm0Triggered()
-        : MCP7940N_IsAlarm1Triggered();
+                         ? MCP7940N_IsAlarm0Triggered()
+                         : MCP7940N_IsAlarm1Triggered();
 
     DebugUVal("[RTC] Alarm ausgelöst?", result, "");
     return result;
@@ -124,16 +130,16 @@ static void rtc_set_alarm_periodic(uint8_t interval_min)
     rtc_set_alarm(RTC_ALARM_0, h, next_min, 0);
 }
 
-void rtc_set_periodic_alarm_5min(void)    { rtc_set_alarm_periodic(5); }
-void rtc_set_periodic_alarm_10min(void)   { rtc_set_alarm_periodic(10); }
-void rtc_set_periodic_alarm_15min(void)   { rtc_set_alarm_periodic(15); }
-void rtc_set_periodic_alarm_30min(void)   { rtc_set_alarm_periodic(30); }
-void rtc_set_periodic_alarm_hourly(void)  { rtc_set_alarm_periodic(60); }
+void rtc_set_periodic_alarm_5min(void) { rtc_set_alarm_periodic(5); }
+void rtc_set_periodic_alarm_10min(void) { rtc_set_alarm_periodic(10); }
+void rtc_set_periodic_alarm_15min(void) { rtc_set_alarm_periodic(15); }
+void rtc_set_periodic_alarm_30min(void) { rtc_set_alarm_periodic(30); }
+void rtc_set_periodic_alarm_hourly(void) { rtc_set_alarm_periodic(60); }
 
 void rtc_set_unix_timestamp(uint32_t unix_time)
 {
     // Umwandlung von Unix-Zeit (Sekunden seit 1970) in Stunde/Minute/Sekunde
-    uint32_t total_seconds = unix_time % 86400;  // Sekunden seit Mitternacht
+    uint32_t total_seconds = unix_time % 86400; // Sekunden seit Mitternacht
     uint8_t hours = (total_seconds / 3600) % 24;
     uint8_t minutes = (total_seconds / 60) % 60;
     uint8_t seconds = total_seconds % 60;
