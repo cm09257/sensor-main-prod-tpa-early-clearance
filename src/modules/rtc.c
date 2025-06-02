@@ -39,10 +39,10 @@ timestamp_t rtc_get_timestamp(void)
     rtc_get_time(&h, &m, &s);
     uint32_t ts = ((uint32_t)h * 60 + m) / 5;
 
-    Debug("[RTC] Timestamp (5-min): ");
-    char ts_str[12];
-    sprintf(ts_str, "%lu", (unsigned long)ts);
-    DebugLn(ts_str);
+    // Debug("[RTC] Timestamp (5-min): ");
+    // char ts_str[12];
+    // sprintf(ts_str, "%lu", (unsigned long)ts);
+    // DebugLn(ts_str);
 
     return ts;
 }
@@ -55,7 +55,7 @@ void rtc_set_alarm(rtc_alarm_t alarm, uint8_t hour, uint8_t minute, uint8_t seco
     // DebugLn(buf);
     delay(5);
     MCP7940N_ConfigureAbsoluteAlarmX(alarm, hour, minute, second);
-    DebugLn("Configured abs alarm");
+    //   DebugLn("Configured abs alarm");
     delay(5);
 }
 
@@ -67,8 +67,9 @@ void rtc_set_alarm_in_minutes(rtc_alarm_t alarm, uint8_t delta_min)
     uint8_t new_m = (m + delta_min) % 60;
     uint8_t new_h = (h + (m + delta_min) / 60) % 24;
 
-    DebugUVal("[RTC] Alarm in", delta_min, "min");
-    rtc_set_alarm(alarm, new_h, new_m, 0);
+    DebugUVal("Alarm m = ", new_m, "");
+    DebugUVal("Alarm s", s, "");
+    rtc_set_alarm(alarm, new_h, new_m, s);
 }
 
 void rtc_set_alarm_offset(rtc_alarm_t alarm, uint8_t offset_minutes, uint8_t offset_seconds)

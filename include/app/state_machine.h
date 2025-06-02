@@ -18,7 +18,7 @@ static timestamp_t last_measurement_ts = 0;
 static bool mode_transition_pending = FALSE;
 
 /// Modus vor Sleep (z. B. zur Rückkehr nach TEMP_ALERT)
-static mode_t mode_before_halt = MODE_TEST;
+extern mode_t mode_before_halt;
 
 /// Vormerkung für nächsten Modus (bei Übergang)
 static mode_t next_mode;

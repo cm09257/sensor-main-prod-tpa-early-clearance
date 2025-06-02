@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include "app/state_machine.h"
 #include "modes/mode_pre_high_temperature.h"
+#include "modes/mode_high_temperature.h"
 #include "periphery/tmp126.h"
 #include "periphery/mcp7940n.h"
 #include "periphery/uart.h"
@@ -29,21 +30,24 @@
 #include "utility/random.h"
 #include "stm8s_clk.h"
 
-
 INTERRUPT_HANDLER(EXTI_PORT_D_IRQHandler, PORT_D_INTERRUPT_VECTOR) // RTC_WAKE = PD2
 {
-    MCP7940N_DisableAlarmX(1);  // immediately disable and clear alarm
-    MCP7940N_ClearAlarmFlagX(1); // in ISR
+    DebugUVal("[ISR] Last mode = ", mode_before_halt, "");
+    if (mode_before_halt == MODE_HIGH_TEMPERATURE)
+    {
+        DebugLn("[ISR] Last mode = MODE_HIGH_TEMPERATURE");
+        mode_hi_temp_measurement_alert_triggered = TRUE;
+        MCP7940N_DisableAlarmX(1);   // immediately disable and clear alarm
+        MCP7940N_ClearAlarmFlagX(1); // in ISR
+    }
+
     char buf[64];
-    sprintf(buf, "PD2 Interrupt ausgeloest");
+    sprintf(buf, "[ISR] PD2 Interrupt ausgeloest");
     DebugLn(buf);
-    MCP7940N_SetTime(0, 0, 55);
-    MCP7940N_ConfigureAbsoluteAlarmX(1, 0, 1, 0); // Alarm bei sek = 00:01:00
-    MCP7940N_EnableAlarmX(1);
 }
 
 INTERRUPT_HANDLER(EXTI_PORT_C_IRQHandler, PORT_C_INTERRUPT_VECTOR) // TMP126 ALERT = PE5
-{   
+{
     pre_hi_temp_alert_triggered = TRUE;
 }
 
@@ -71,7 +75,7 @@ void system_init(void)
     TMP126_init(); // TMP126 initialisieren.
     delay(100);
     MCP7940N_Init(); ///< Realtime Clock initialisieren
-    
+
     global_power_save();
     delay(100);
 

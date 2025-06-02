@@ -28,6 +28,8 @@
 #include "modes/mode_wait_for_activation.h"
 #include "modes/mode_high_temperature.h"
 
+mode_t mode_before_halt = MODE_TEST;
+
 // === Initialisierung ===
 
 /**

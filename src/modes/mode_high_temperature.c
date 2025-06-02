@@ -1,5 +1,7 @@
 // mode_high_temperature.c
 
+#include "stm8s_exti.h"
+#include "stm8s_gpio.h"
 #include "modes/mode_high_temperature.h"
 #include "modules/storage_internal.h"
 #include "utility/debug.h"
@@ -9,67 +11,103 @@
 #include "modules/rtc.h"
 #include "periphery/power.h"
 #include "periphery/tmp126.h"
+#include "periphery/hardware_resources.h"
+
+#define DEBUG_MODE_HI_TEMP 1
+volatile bool mode_hi_temp_measurement_alert_triggered = FALSE;
 
 void mode_high_temperature_run(void)
 {
     DebugLn("=== MODE_HIGH_TEMPERATURE START ===");
-    DebugLn("[HTEMP] Starte Abkühlkurven-Aufzeichnung...");
+    float threshold = settings_get()->cool_down_threshold;
+    uint8_t interval_min = settings_get()->high_temp_measurement_interval_5min * 5;
+
+    DebugLn("[MODE_HI_TEMP] Settings loaded");
+    DebugFVal("[MODE_HI_TEMP] Low temp threshold = ", threshold, "degC");
+    DebugUVal("[MODE_HI_TEMP] Temperature measurement interval = ", interval_min, "min");
+    DebugLn("");
+    DebugLn("[MODE_HI_TEMP] Start measurement of cool-down phase ...");
+
+    // Configuring RTC EXTI
+    GPIO_Init(RTC_WAKE_PORT, RTC_WAKE_PIN, GPIO_MODE_IN_FL_IT);
+    EXTI_SetExtIntSensitivity(RTC_EXTI_PORT, EXTI_SENSITIVITY_FALL_ONLY);
 
     while (state_get_current() == MODE_HIGH_TEMPERATURE)
     {
-        // a) Temperatur messen
+        // Measure Temperature
         TMP126_OpenForMeasurement();
         float temp = TMP126_ReadTemperatureCelsius();
         TMP126_CloseForMeasurement();
-        DebugFVal("[HTEMP] Temperaturmessung: ", (int)(temp * 100), " x0.01°C");
+        DebugFVal("[MODE_HI_TEMP] Temp readout = : ", temp, "degC");
 
-        // b) Datensatz intern speichern
+        // Create Data Record
         record_t rec;
         rec.timestamp = rtc_get_timestamp(); // 5-min Ticks
         rec.temperature = temp;
         rec.flags = 0x01; // gültiger Messwert
+                          // DebugUVal("[MODE_HI_TEMP] rec.timestamp   = ", rec.timestamp, "x5 min");
+                          //  DebugUVal("[MODE_HI_TEMP] rec.temperature = ", rec.temperature, "degC");
+                          // DebugUVal("[MODE_HI_TEMP] rec.flags       = ", rec.flags, "(1 = ok)");
 
+        // Save Data Record to Internal Flash
         if (!internal_flash_write_record(&rec))
         {
-            DebugLn("[HTEMP] Fehler beim Schreiben in internen Flash!");
+            DebugLn("[MODE_HI_TEMP] Error writing internal Flash!");
         }
         else
         {
-            DebugLn("[HTEMP] Datensatz gespeichert");
+#if defined(DEBUG_MODE_HI_TEMP)
+            DebugLn("[MODE_HI_TEMP] Saved record to internal flash");
             record_t validation_read_record;
-            if(internal_flash_read_record(0, &validation_read_record))
-            {             
-                DebugLn("Re-Read from internal flash successful");
-                DebugUVal("Validation timestamp = ", validation_read_record.timestamp, "x 5min");
-                DebugUVal("Validation temperature = ", validation_read_record.temperature, "degC");
-                DebugUVal("Validation data ok flag = ", validation_read_record.flags, "(1=ok)");
+            if (internal_flash_read_record(0, &validation_read_record))
+            {
+                DebugLn("[MODE_HI_TEMP] Re-Read from internal flash successful");
+                DebugUVal("[MODE_HI_TEMP] Validation timestamp = ", validation_read_record.timestamp, "x 5min");
+                DebugUVal("[MODE_HI_TEMP] Validation temperature = ", validation_read_record.temperature, "degC");
+                DebugUVal("[MODE_HI_TEMP] Validation data ok flag = ", validation_read_record.flags, "(1=ok)");
             }
+#endif
         }
 
-        // c) Prüfen auf Unterschreiten der Abkühl-Schwelle
-        float threshold = settings_get()->cool_down_threshold;
-        DebugIVal("[HTEMP] Schwelle: ", (int)(threshold * 100), " x0.01°C");
-
+        // Check if temperature is below threshold
         if (temp < threshold)
         {
-            DebugLn("[HTEMP] Schwelle unterschritten → Datenübernahme und Moduswechsel");
+            DebugLn("[MODE_HI_TEMP] Temperature below threshold -> Copy data and change mode");
 
             copy_internal_to_external_flash();
-            DebugLn("[HTEMP] Daten in externen Flash kopiert");
+            DebugLn("[MODE_HI_TEMP] Copied data from internal to external flash");
 
             state_transition(MODE_OPERATIONAL);
-            break;
+            return;
         }
 
-        // d) Nächste Messung planen
-        uint8_t interval_min = settings_get()->high_temp_measurement_interval_5min * 5;
-        DebugUVal("[HTEMP] Nächster Wakeup in ", interval_min, " Minuten");
+        // Plan next temperature measurement using RTC alert
 
-        rtc_set_alarm_in_minutes(RTC_ALARM_0, interval_min);
+#if defined(DEBUG_MODE_HI_TEMP)
+        DebugUVal("[MODE_HI_TEMP] Next Wakeup in ", interval_min, " Minuten");
+        uint8_t h, m, s;
+        rtc_get_time(&h, &m, &s);
+        DebugUVal("Current m = ", m, "");
+        DebugUVal("Current s", s, "");
+        rtc_set_alarm_in_minutes(RTC_ALARM_1, 1);
+#else
+        DebugUVal("[MODE_HI_TEMP] Next Wakeup in ", interval_min, " Minuten");
+        rtc_set_alarm_in_minutes(RTC_ALARM_1, interval_min);
+#endif
+        mode_before_halt = MODE_HIGH_TEMPERATURE;
+        enableInterrupts();
 
         // e) Schlafmodus
-        DebugLn("[HTEMP] HALT bis nächster RTC-Alarm");
-        mode_before_halt = MODE_HIGH_TEMPERATURE;
-        power_enter_halt();
+        DebugLn("[MODE_HI_TEMP] HALT until next RTC-Alarm");
+
+
+        // Warten auf Alert (Polling-Variante, falls HALT noch nicht aktiv)
+        // TODO: Replace by power_enter_halt(); once completed
+        while (!mode_hi_temp_measurement_alert_triggered)
+        {
+            nop();
+        }
+        DebugLn("[MODE_HI_TEMP] Restarting main loop");
+        mode_hi_temp_measurement_alert_triggered = FALSE;
     }
 }

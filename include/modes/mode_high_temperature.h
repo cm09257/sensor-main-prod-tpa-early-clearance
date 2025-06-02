@@ -1,6 +1,10 @@
 #ifndef MODE_HIGH_TEMPERATURE_H
 #define MODE_HIGH_TEMPERATURE_H
 
+
+// Globales Flag, das vom EXTI gesetzt wird
+extern volatile bool mode_hi_temp_measurement_alert_triggered;
+
 /**
  * @brief Führt die Temperaturüberwachung im Übertemperatur-Modus durch.
  *
