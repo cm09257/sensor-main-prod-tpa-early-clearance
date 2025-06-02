@@ -49,7 +49,7 @@ void increase_time_by_min(uint8_t delta_min, uint8_t curr_h, uint8_t curr_m, uin
 
 void mode_pre_high_temperature_run(void)
 {
-    DebugLn("=== Mode PRE_HIGH_TEMP] ===");
+    DebugLn("=== Mode PRE_HIGH_TEMP ===");
 
     float curr_temp;
 
@@ -66,6 +66,16 @@ void mode_pre_high_temperature_run(void)
 
     // Enabling Interrupts
     enableInterrupts();
+
+    /// For Production: Version with ___HALT___
+    __asm__("halt");
+    disableInterrupts();
+    DebugLn("======================== Hi Alert Triggered ===");
+    TMP126_Disable_THigh_Alert();
+    TMP126_CloseForAlert();
+    state_transition(MODE_HIGH_TEMPERATURE);
+
+    /* /// For Debug: Loop without ___HALT___
     DebugLn("[PRE_HI_TEMP_MODE] Waiting for Hi-Temp Alert Interrupt ...");
     char buf[32];
 
@@ -84,8 +94,8 @@ void mode_pre_high_temperature_run(void)
             state_transition(MODE_HIGH_TEMPERATURE);
             return;
         }
-        nop();  
-    }    
+        nop();
+    }  */
 }
 #ifdef PRE_HIGH_TEMP_MEASURE
 DebugLn("[PRE_HIGH_TEMP] Zyklische Messung aktiv");
