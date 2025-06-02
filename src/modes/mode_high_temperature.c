@@ -61,14 +61,14 @@ void mode_high_temperature_run(void)
         else
         {
 #if defined(DEBUG_MODE_HI_TEMP)
-            DebugLn("[MODE_HI_TEMP] Saved record to internal flash");
+          //  DebugLn("[MODE_HI_TEMP] Saved record to internal flash");
             record_t validation_read_record;
             if (internal_flash_read_record(0, &validation_read_record))
             {
-                DebugLn("[MODE_HI_TEMP] Re-Read from internal flash successful");
-                DebugUVal("[MODE_HI_TEMP] Validation timestamp = ", validation_read_record.timestamp, "x 5min");
-                DebugUVal("[MODE_HI_TEMP] Validation temperature = ", validation_read_record.temperature, "degC");
-                DebugUVal("[MODE_HI_TEMP] Validation data ok flag = ", validation_read_record.flags, "(1=ok)");
+              //  DebugLn("[MODE_HI_TEMP] Re-Read from internal flash successful");
+              //  DebugUVal("[MODE_HI_TEMP] Validation timestamp = ", validation_read_record.timestamp, "x 5min");
+              //  DebugUVal("[MODE_HI_TEMP] Validation temperature = ", validation_read_record.temperature, "degC");
+               // DebugUVal("[MODE_HI_TEMP] Validation data ok flag = ", validation_read_record.flags, "(1=ok)");
             }
 #endif
         }
