@@ -51,40 +51,37 @@ void mode_pre_high_temperature_run(void)
 {
     DebugLn("=== Mode PRE_HIGH_TEMP] ===");
 
-    uint8_t h, m, s;
-    uint8_t new_h, new_m, new_s;
     float curr_temp;
 
+    // Configuring TMP126 EXTI
     GPIO_Init(TMP126_WAKE_PORT, TMP126_WAKE_PIN, GPIO_MODE_IN_FL_IT);
     EXTI_SetExtIntSensitivity(TMP126_EXTI_PORT, EXTI_SENSITIVITY_FALL_ONLY);
+
+    // Configuring Temp Hi Alert on TMP126
     TMP126_OpenForAlert();
     TMP126_SetHiLimit(PRE_HIGH_TEMP_THRESHOLD_C);
     TMP126_SetHysteresis(1.0f);
     TMP126_Disable_TLow_Alert();
     TMP126_Enable_THigh_Alert();
 
-    //   GPIO_Init(RTC_WAKE_PORT, RTC_WAKE_PIN, GPIO_MODE_IN_FL_IT);
-    //   EXTI_SetExtIntSensitivity(RTC_EXTI_PORT, EXTI_SENSITIVITY_FALL_ONLY);
-    MCP7940N_SetTime(0, 0, 0);
-    MCP7940N_DisableAlarmX(0);
-    MCP7940N_ClearAlarmFlagX(0);
-    MCP7940N_DisableAlarmX(1);
-    MCP7940N_ClearAlarmFlagX(1);
-    // MCP7940N_ConfigureAbsoluteAlarmX(1, 0, 1, 0); // Alarm bei sek = 00:01:00
-    // MCP7940N_EnableAlarmX(1);
+    // Enabling Interrupts
     enableInterrupts();
-    DebugLn("Warte auf Interrupt");
+    DebugLn("[PRE_HI_TEMP_MODE] Waiting for Hi-Temp Alert Interrupt ...");
     char buf[32];
-    while (1)
+    while (1)  // TODO: Replace loop by power_enter_halt() once function is completed.
     {
         TMP126_Format_Temperature(buf);
         DebugLn(buf);
         if (pre_hi_temp_alert_triggered)
         {
-            DebugLn("============================= TMP Hi Alert triggered via ISR!");
-            pre_hi_temp_alert_triggered = FALSE;
+            disableInterrupts();
+            TMP126_Disable_THigh_Alert();
+            DebugLn("======================== Hi Alert Triggered ===");
+            TMP126_CloseForAlert();
+            state_transition(MODE_HIGH_TEMPERATURE);
+            return;
         }
-        nop();
+        nop();  
     }
 
     /*
