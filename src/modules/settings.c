@@ -5,6 +5,7 @@
 #include "stm8s.h"
 #include "periphery/uart.h"
 #include "utility/debug.h"
+#include "utility/delay.h"
 
 #define SETTINGS_ADDR 0x30 // Startadresse im EEPROM
 #define SETTINGS_CRC_ADDR (SETTINGS_ADDR + sizeof(settings_t))
@@ -73,6 +74,14 @@ void settings_load(void)
         settings_set_default();
         settings_save();
     }
+}
+
+void settings_set_cool_down_threshold(float threshold)
+{
+    current_settings.cool_down_threshold = threshold;
+    delay(5);
+    settings_save();
+    delay(5);
 }
 
 void settings_save(void)

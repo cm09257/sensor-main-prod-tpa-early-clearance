@@ -116,4 +116,6 @@ void settings_save(void);
  */
 void settings_set_default(void);
 
+void settings_set_cool_down_threshold(float threshold);
+
 #endif // SETTINGS_H

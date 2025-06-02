@@ -5,12 +5,14 @@
 #include "modes/mode_high_temperature.h"
 #include "modules/storage_internal.h"
 #include "utility/debug.h"
+#include "utility/delay.h"
 #include "app/state_machine.h"
 #include "modules/settings.h"
 #include "modules/storage.h"
 #include "modules/rtc.h"
 #include "periphery/power.h"
 #include "periphery/tmp126.h"
+#include "periphery/mcp7940n.h"
 #include "periphery/hardware_resources.h"
 
 #define DEBUG_MODE_HI_TEMP 1
@@ -19,14 +21,16 @@ volatile bool mode_hi_temp_measurement_alert_triggered = FALSE;
 void mode_high_temperature_run(void)
 {
     DebugLn("=== MODE_HIGH_TEMPERATURE START ===");
+    settings_set_cool_down_threshold(24.0f);
+
     float threshold = settings_get()->cool_down_threshold;
     uint8_t interval_min = settings_get()->high_temp_measurement_interval_5min * 5;
 
-    DebugLn("[MODE_HI_TEMP] Settings loaded");
-    DebugFVal("[MODE_HI_TEMP] Low temp threshold = ", threshold, "degC");
-    DebugUVal("[MODE_HI_TEMP] Temperature measurement interval = ", interval_min, "min");
-    DebugLn("");
-    DebugLn("[MODE_HI_TEMP] Start measurement of cool-down phase ...");
+   // DebugLn("[MODE_HI_TEMP] Settings loaded");
+   // DebugFVal("[MODE_HI_TEMP] Low temp threshold = ", threshold, "degC");
+   // DebugUVal("[MODE_HI_TEMP] Temperature measurement interval = ", interval_min, "min");
+  //  DebugLn("");
+  //  DebugLn("[MODE_HI_TEMP] Start measurement of cool-down phase ...");
 
     // Configuring RTC EXTI
     GPIO_Init(RTC_WAKE_PORT, RTC_WAKE_PIN, GPIO_MODE_IN_FL_IT);
@@ -84,12 +88,12 @@ void mode_high_temperature_run(void)
         // Plan next temperature measurement using RTC alert
 
 #if defined(DEBUG_MODE_HI_TEMP)
-        DebugUVal("[MODE_HI_TEMP] Next Wakeup in ", interval_min, " Minuten");
         uint8_t h, m, s;
         rtc_get_time(&h, &m, &s);
         DebugUVal("Current m = ", m, "");
         DebugUVal("Current s", s, "");
         rtc_set_alarm_in_minutes(RTC_ALARM_1, 1);
+        delay(1000);
 #else
         DebugUVal("[MODE_HI_TEMP] Next Wakeup in ", interval_min, " Minuten");
         rtc_set_alarm_in_minutes(RTC_ALARM_1, interval_min);
@@ -100,13 +104,14 @@ void mode_high_temperature_run(void)
         // e) Schlafmodus
         DebugLn("[MODE_HI_TEMP] HALT until next RTC-Alarm");
 
-
         // Warten auf Alert (Polling-Variante, falls HALT noch nicht aktiv)
         // TODO: Replace by power_enter_halt(); once completed
         while (!mode_hi_temp_measurement_alert_triggered)
         {
             nop();
         }
+        MCP7940N_DisableAlarmX(1);   // immediately disable and clear alarm
+        MCP7940N_ClearAlarmFlagX(1); // in ISR
         DebugLn("[MODE_HI_TEMP] Restarting main loop");
         mode_hi_temp_measurement_alert_triggered = FALSE;
     }

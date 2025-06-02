@@ -40,9 +40,9 @@ bool internal_flash_write_record(const record_t* rec)
         FLASH_ProgramByte(addr + i, raw[i]);
     }
 
-    DebugUVal("[internal] Write: Timestamp", ts16, "");
-    DebugUVal("           Temp x100", temp_fixed, "");
-    DebugUVal("           Flags", rec->flags, "");
+   // DebugUVal("[internal] Write: Timestamp", ts16, "");
+   // DebugUVal("           Temp x100", temp_fixed, "");
+   // DebugUVal("           Flags", rec->flags, "");
 
     internal_write_offset += 5;
     return TRUE;
@@ -70,10 +70,10 @@ bool internal_flash_read_record(uint16_t index, record_t* out)
     out->temperature = temp_fixed / 100.0f;
     out->flags       = raw[4];
 
-    DebugUVal("[internal] Read: Index", index, "");
-    DebugUVal("           Timestamp", ts16, "");
-    DebugIVal("           Temp x100", temp_fixed, "");
-    DebugUVal("           Flags", out->flags, "");
+  //  DebugUVal("[internal] Read: Index", index, "");
+ //   DebugUVal("           Timestamp", ts16, "");
+ //   DebugIVal("           Temp x100", temp_fixed, "");
+  //  DebugUVal("           Flags", out->flags, "");
 
     return TRUE;
 }

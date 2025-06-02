@@ -251,6 +251,7 @@ uint16_t flash_get_count(void)
 
 bool flash_write_record_nolock(const record_t *rec)
 {
+    DebugLn("[flash_write_record_nolock]");
     if (!rec)
         return FALSE;
 
@@ -290,6 +291,8 @@ bool copy_internal_to_external_flash(void)
         DebugLn("[copy] Flash konnte nicht geöffnet werden.");
         return FALSE;
     }
+    else
+        DebugLn("[copy] Flash opened successfully");
 
     for (uint16_t i = 0; i < total; i++)
     {

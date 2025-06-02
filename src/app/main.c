@@ -37,13 +37,7 @@ INTERRUPT_HANDLER(EXTI_PORT_D_IRQHandler, PORT_D_INTERRUPT_VECTOR) // RTC_WAKE =
     {
         DebugLn("[ISR] Last mode = MODE_HIGH_TEMPERATURE");
         mode_hi_temp_measurement_alert_triggered = TRUE;
-        MCP7940N_DisableAlarmX(1);   // immediately disable and clear alarm
-        MCP7940N_ClearAlarmFlagX(1); // in ISR
     }
-
-    char buf[64];
-    sprintf(buf, "[ISR] PD2 Interrupt ausgeloest");
-    DebugLn(buf);
 }
 
 INTERRUPT_HANDLER(EXTI_PORT_C_IRQHandler, PORT_C_INTERRUPT_VECTOR) // TMP126 ALERT = PE5
