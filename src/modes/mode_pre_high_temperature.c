@@ -55,6 +55,40 @@ void mode_pre_high_temperature_run(void)
     uint8_t new_h, new_m, new_s;
     float curr_temp;
 
+    GPIO_Init(TMP126_WAKE_PORT, TMP126_WAKE_PIN, GPIO_MODE_IN_FL_IT);
+    EXTI_SetExtIntSensitivity(TMP126_EXTI_PORT, EXTI_SENSITIVITY_FALL_ONLY);
+    TMP126_OpenForAlert();
+    TMP126_SetHiLimit(PRE_HIGH_TEMP_THRESHOLD_C);
+    TMP126_SetHysteresis(1.0f);
+    TMP126_Disable_TLow_Alert();
+    TMP126_Enable_THigh_Alert();
+
+    //   GPIO_Init(RTC_WAKE_PORT, RTC_WAKE_PIN, GPIO_MODE_IN_FL_IT);
+    //   EXTI_SetExtIntSensitivity(RTC_EXTI_PORT, EXTI_SENSITIVITY_FALL_ONLY);
+    MCP7940N_SetTime(0, 0, 0);
+    MCP7940N_DisableAlarmX(0);
+    MCP7940N_ClearAlarmFlagX(0);
+    MCP7940N_DisableAlarmX(1);
+    MCP7940N_ClearAlarmFlagX(1);
+    // MCP7940N_ConfigureAbsoluteAlarmX(1, 0, 1, 0); // Alarm bei sek = 00:01:00
+    // MCP7940N_EnableAlarmX(1);
+    enableInterrupts();
+    DebugLn("Warte auf Interrupt");
+    char buf[32];
+    while (1)
+    {
+        TMP126_Format_Temperature(buf);
+        DebugLn(buf);
+        if (pre_hi_temp_alert_triggered)
+        {
+            DebugLn("============================= TMP Hi Alert triggered via ISR!");
+            pre_hi_temp_alert_triggered = FALSE;
+        }
+        nop();
+    }
+
+    /*
+
     DebugLn("Setting INT Config");
 
     if (!pre_hi_temp_interrupt_configured)
@@ -98,85 +132,86 @@ void mode_pre_high_temperature_run(void)
         power_enter_halt();
         power_leave_halt();
         DebugLn("Woke up from the dead.");
-    }
+        */
+}
 
-    /* TMP126_OpenForAlert(); // Set mode for using alert functions of tmp126
+/* TMP126_OpenForAlert(); // Set mode for using alert functions of tmp126
 
-     uint16_t alertStatus = TMP126_ReadAlertStatus(); // Read Alert Status clears all alert flags
-     delay(5);
-     TMP126_SetHysteresis(1.0f); // Set Hysteresis to 1K
-     delay(5);
+ uint16_t alertStatus = TMP126_ReadAlertStatus(); // Read Alert Status clears all alert flags
+ delay(5);
+ TMP126_SetHysteresis(1.0f); // Set Hysteresis to 1K
+ delay(5);
 
-     TMP126_SetHiLimit(PRE_HIGH_TEMP_THRESHOLD_C);
-     delay(5);
-     TMP126_SetLoLimit(-60.0f);
+ TMP126_SetHiLimit(PRE_HIGH_TEMP_THRESHOLD_C);
+ delay(5);
+ TMP126_SetLoLimit(-60.0f);
 
-     TMP126_Enable_THigh_Alert();
-     delay(5);
-     TMP126_Disable_TLow_Alert();
-     delay(5);
-     DebugLn(TMP126_Is_THigh_Enabled() ? "THi Alert Enabled" : "THi Alert Disabled");
-     delay(5);
-     DebugLn(TMP126_Is_TLow_Enabled() ? "TLo Alert Enabled" : "TLo Alert Disabled");
-     delay(5);
+ TMP126_Enable_THigh_Alert();
+ delay(5);
+ TMP126_Disable_TLow_Alert();
+ delay(5);
+ DebugLn(TMP126_Is_THigh_Enabled() ? "THi Alert Enabled" : "THi Alert Disabled");
+ delay(5);
+ DebugLn(TMP126_Is_TLow_Enabled() ? "TLo Alert Enabled" : "TLo Alert Disabled");
+ delay(5);
 
-     // TODO: Wenn der EXTI Port funktioniert, angepasst wieder einbinden
-     GPIO_Init(TMP126_WAKE_PORT, TMP126_WAKE_PIN, GPIO_MODE_IN_PU_IT); // WAKE_TMP as input with interrupt
-     EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOE, EXTI_SENSITIVITY_FALL_ONLY);
-     enableInterrupts();
+ // TODO: Wenn der EXTI Port funktioniert, angepasst wieder einbinden
+ GPIO_Init(TMP126_WAKE_PORT, TMP126_WAKE_PIN, GPIO_MODE_IN_PU_IT); // WAKE_TMP as input with interrupt
+ EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOE, EXTI_SENSITIVITY_FALL_ONLY);
+ enableInterrupts();
 
-     uint8_t h, m, s;
-     char buf[64];
+ uint8_t h, m, s;
+ char buf[64];
 
-     float curr_temp = 0.0f; // TODO: Remove, wenn exti funktioniert
-     bool alert_active = FALSE;
+ float curr_temp = 0.0f; // TODO: Remove, wenn exti funktioniert
+ bool alert_active = FALSE;
 
-     while (1)
+ while (1)
+ {
+     curr_temp = TMP126_ReadTemperatureCelsius(); // TODO: Remove, wenn exti funktioniert
+     DebugFVal("Temp = ", curr_temp, "degC");
+     //   if (curr_temp > PRE_HIGH_TEMP_THRESHOLD_C)   // TODO: Remove, wenn exti funktioniert
+     //      alert_active = TRUE;      // TODO: Remove, wenn exti funktioniert
+
+     if (pre_hi_temp_alert_triggered)
+     //   if (alert_active)
      {
-         curr_temp = TMP126_ReadTemperatureCelsius(); // TODO: Remove, wenn exti funktioniert
-         DebugFVal("Temp = ", curr_temp, "degC");
-         //   if (curr_temp > PRE_HIGH_TEMP_THRESHOLD_C)   // TODO: Remove, wenn exti funktioniert
-         //      alert_active = TRUE;      // TODO: Remove, wenn exti funktioniert
 
-         if (pre_hi_temp_alert_triggered)
-         //   if (alert_active)
-         {
-
-             DebugLn("======================== Hi Alert Triggered ===");
-             state_transition(MODE_HIGH_TEMPERATURE);
-             TMP126_CloseForAlert();
-             break;
-         }
-
-         uint8_t current_tmp_alert_pin = GPIO_ReadInputPin(TMP126_WAKE_PORT, TMP126_WAKE_PIN);
-         //  rtc_get_time(&h, &m, &s);
-         // sprintf(buf, "[%02u:%02u:%02u] TMP_ALERT = %s", h, m, s, current_tmp_alert_pin ? "HIGH" : "LOW");
-         if (current_tmp_alert_pin)
-             DebugLn("HIGH");
-         else
-             DebugLn("LOW");
-
-         //    TMP126_Format_Temperature(buf);
-         //    DebugLn(buf);
+         DebugLn("======================== Hi Alert Triggered ===");
+         state_transition(MODE_HIGH_TEMPERATURE);
+         TMP126_CloseForAlert();
+         break;
      }
-         */
+
+     uint8_t current_tmp_alert_pin = GPIO_ReadInputPin(TMP126_WAKE_PORT, TMP126_WAKE_PIN);
+     //  rtc_get_time(&h, &m, &s);
+     // sprintf(buf, "[%02u:%02u:%02u] TMP_ALERT = %s", h, m, s, current_tmp_alert_pin ? "HIGH" : "LOW");
+     if (current_tmp_alert_pin)
+         DebugLn("HIGH");
+     else
+         DebugLn("LOW");
+
+     //    TMP126_Format_Temperature(buf);
+     //    DebugLn(buf);
+ }
+     */
 #ifdef PRE_HIGH_TEMP_MEASURE
-    DebugLn("[PRE_HIGH_TEMP] Zyklische Messung aktiv");
+DebugLn("[PRE_HIGH_TEMP] Zyklische Messung aktiv");
 
-    float temp = sensor_read_temperature();
-    int temp_int = (int)(temp * 100); // falls gewünscht: 2 Nachkommastellen
-    DebugIVal("[PRE_HIGH_TEMP] Temperatur: ", temp_int, " x0.01 C");
+float temp = sensor_read_temperature();
+int temp_int = (int)(temp * 100); // falls gewünscht: 2 Nachkommastellen
+DebugIVal("[PRE_HIGH_TEMP] Temperatur: ", temp_int, " x0.01 C");
 
-    if (storage_internal_add_measurement(temp))
-    {
-        DebugLn("[PRE_HIGH_TEMP] Temperatur gespeichert");
-    }
-    else
-    {
-        DebugLn("[PRE_HIGH_TEMP] Speicher voll oder Fehler");
-    }
+if (storage_internal_add_measurement(temp))
+{
+    DebugLn("[PRE_HIGH_TEMP] Temperatur gespeichert");
+}
+else
+{
+    DebugLn("[PRE_HIGH_TEMP] Speicher voll oder Fehler");
+}
 
-    state_set_mode(MODE_SLEEP);
+state_set_mode(MODE_SLEEP);
 #else
 /*
     DebugLn("[PRE_HIGH_TEMP] Warte auf TMP126 Alert (EXTI)");
@@ -195,4 +230,4 @@ void mode_pre_high_temperature_run(void)
     }
         */
 #endif
-}
+//}

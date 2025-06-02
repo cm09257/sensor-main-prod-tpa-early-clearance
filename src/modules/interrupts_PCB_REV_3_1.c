@@ -13,7 +13,7 @@
 #include "periphery/tmp126.h"
 
 #if defined(PCB_REV_3_1)
-
+/*
 // === RTC Wakeup ISR ===
 
 INTERRUPT_HANDLER(EXTI_PORT_D_IRQHandler, PORT_D_INTERRUPT_VECTOR) // RTC_WAKE = PD2
@@ -56,11 +56,11 @@ INTERRUPT_HANDLER(EXTI_PORT_D_IRQHandler, PORT_D_INTERRUPT_VECTOR) // RTC_WAKE =
     if (mode_before_halt == MODE_SLEEP || state_get_current() == MODE_SLEEP)
         state_transition(MODE_OPERATIONAL);
 
-        */
-}
-
+        
+}*/
+/*
 INTERRUPT_HANDLER(EXTI_PORT_C_IRQHandler, PORT_C_INTERRUPT_VECTOR) // TMP126 ALERT = PE5
 {   
     pre_hi_temp_alert_triggered = TRUE;
-}
+}*/
 #endif
