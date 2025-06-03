@@ -22,12 +22,16 @@ void rtc_init(void)
 
 void rtc_get_time(uint8_t *hour, uint8_t *minute, uint8_t *second)
 {
-    //  DebugLn("In rtc_get_time");
+      DebugLn("In rtc_get_time");
     MCP7940N_Open();
+    DebugLn("rtc_get_time open done");
     delay(5);
     MCP7940N_GetTime(hour, minute, second);
+    DebugLn("rtc_get_time MCP7940N_GetTime done");
     delay(5);
     MCP7940N_Close();
+    delay(5);
+    DebugLn("rtc_get_time open done");
 
     //  DebugLn("Leaving rtc_get_time");
     // Debug("[RTC] Aktuelle Uhrzeit: ");

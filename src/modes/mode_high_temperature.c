@@ -43,7 +43,7 @@ void mode_high_temperature_run(void)
         float temp = TMP126_ReadTemperatureCelsius();
         TMP126_CloseForMeasurement();
         DebugFVal("[MODE_HI_TEMP] Temp readout = : ", temp, "degC");
-
+        Debug_I2C_PinModes();
         // Create Data Record
         record_t rec;
         rec.timestamp = rtc_get_timestamp(); // 5-min Ticks
