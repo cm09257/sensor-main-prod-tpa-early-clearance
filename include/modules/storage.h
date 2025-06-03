@@ -105,4 +105,6 @@ uint16_t flash_get_count(void);
  */
 bool copy_internal_to_external_flash(void);
 
+
+void storage_flash_test(void);
 #endif // STORAGE_H

@@ -6,6 +6,7 @@
 #include "utility/delay.h"
 #include "stm8s_flash.h"
 #include <string.h>
+#include "periphery/uart.h"
 
 #define EEPROM_ADDR_MODE 0x10
 #define EEPROM_ADDR_DEVICE_ID 0x20
@@ -28,7 +29,7 @@ void storage_eeprom_unlock(void) // internal flash
 
 void storage_write_eeprom(uint16_t address, const uint8_t *data, uint16_t len)
 {
-   // DebugLn("Manual EEPROM Unlock Test");
+    // DebugLn("Manual EEPROM Unlock Test");
 
     FLASH->CR2 |= FLASH_CR2_PRG;
     FLASH->DUKR = 0xAE;
@@ -36,8 +37,8 @@ void storage_write_eeprom(uint16_t address, const uint8_t *data, uint16_t len)
 
     if (FLASH->IAPSR & FLASH_IAPSR_DUL)
     {
-       // DebugLn("EEPROM Unlock erfolgreich!");
-       delay(1);
+        // DebugLn("EEPROM Unlock erfolgreich!");
+        delay(1);
     }
     else
     {
@@ -48,7 +49,7 @@ void storage_write_eeprom(uint16_t address, const uint8_t *data, uint16_t len)
     if (!(FLASH->IAPSR & FLASH_IAPSR_DUL))
     {
         FLASH_Unlock(FLASH_MEMTYPE_DATA);
-      //  DebugLn("[EEPROM] Unlock durchgeführt");
+        //  DebugLn("[EEPROM] Unlock durchgeführt");
     }
 
     for (uint16_t i = 0; i < len; ++i)
@@ -99,7 +100,7 @@ static uint8_t crc4_timestamp(uint32_t ts_5min)
 
 void persist_current_mode(mode_t mode) // internal flash
 {
-    //DebugUVal("[storage] Speichere Modus:", mode, "");
+    // DebugUVal("[storage] Speichere Modus:", mode, "");
     uint8_t value = (uint8_t)mode;
     uint8_t crc = calc_crc8(value);
     storage_write_eeprom(EEPROM_ADDR_MODE, &value, 1);
@@ -114,7 +115,7 @@ bool load_persisted_mode(mode_t *out_mode) // internal flash
     if (calc_crc8(value) == crc)
     {
         *out_mode = (mode_t)value;
-      //  DebugUVal("[storage] Geladener Modus:", value, "");
+        //  DebugUVal("[storage] Geladener Modus:", value, "");
         return TRUE;
     }
     DebugLn("[storage] CRC Fehler beim Laden des Modus");
@@ -316,3 +317,79 @@ bool copy_internal_to_external_flash(void)
     DebugLn("[copy] Alle internen Datensätze erfolgreich ins externe Flash kopiert!");
     return TRUE;
 }
+
+void storage_flash_test(void)
+{
+    DebugLn("=== [Flat Flash Test: storage.c] ===");
+
+    const uint32_t test_addr = FLASH_ADDR_BASE;
+    const uint16_t test_len = 64;
+
+    uint8_t write_buf[64];
+    uint8_t read_buf[64];
+    bool success = TRUE;
+
+    // 1. Testdaten erzeugen
+    for (uint8_t i = 0; i < test_len; i++)
+        write_buf[i] = i ^ 0x5A;
+
+    // 2. Öffnen
+    if (!Flash_Open())
+    {
+        DebugLn("[storage_flat] Flash Open fehlgeschlagen");
+        return;
+    }
+
+    // 3. Schreiben
+    DebugLn("[storage_flat] Schreibe Testdaten...");
+    if (!Flash_PageProgram(test_addr, write_buf, test_len))
+    {
+        DebugLn("[storage_flat] Schreiben fehlgeschlagen");
+        Flash_Close();
+        return;
+    }
+
+    Flash_Close();
+    delay(5); // minimaler Flash-Write-Puffer-Zyklus
+
+    // 4. Lesen
+    for (uint8_t i = 0; i < test_len; i++)
+        read_buf[i] = 0;
+
+    if (!Flash_Open())
+    {
+        DebugLn("[storage_flat] Flash Re-Open fehlgeschlagen");
+        return;
+    }
+
+    if (!Flash_ReadData(test_addr, read_buf, test_len))
+    {
+        DebugLn("[storage_flat] Lesen fehlgeschlagen");
+        Flash_Close();
+        return;
+    }
+
+    Flash_Close();
+
+    // 5. Validieren
+    for (uint8_t i = 0; i < 5; i++) // nur die ersten 5 prüfen
+    {
+        if (read_buf[i] != write_buf[i])
+        {
+            success = FALSE;
+            UART1_SendString("[FAIL] Byte ");
+            UART1_SendHexByte(i);
+            UART1_SendString(": soll=");
+            UART1_SendHexByte(write_buf[i]);
+            UART1_SendString(" ist=");
+            UART1_SendHexByte(read_buf[i]);
+            UART1_SendString("\r\n");
+        }
+    }
+
+    if (success)
+        DebugLn("[PASS] Flash-Test erfolgreich");
+    else
+        DebugLn("[FAIL] Flash-Daten stimmen nicht überein");
+}
+
