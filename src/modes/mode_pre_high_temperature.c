@@ -64,13 +64,30 @@ void mode_pre_high_temperature_run(void)
     TMP126_Disable_TLow_Alert();
     TMP126_Enable_THigh_Alert();
 
-    // Enabling Interrupts
+    uint8_t h, m, s;
+    rtc_get_time(&h, &m, &s);
+    DebugUVal("h1:", h, "");
+    DebugUVal("m:", m, "");
+    DebugUVal("s:", s, "");
+    delay(2000);
 
-    /// For Production: Version with ___HALT___
+    /// For Production: Version with     power_enter_halt();
     power_enter_halt();
     delay(100);
+
+    rtc_get_time(&h, &m, &s);
+    DebugUVal("h2:", h, "");
+    DebugUVal("m:", m, "");
+    DebugUVal("s:", s, "");
+
     enableInterrupts();
-    delay(100);
+    delay(2000);
+
+    rtc_get_time(&h, &m, &s);
+    DebugUVal("h:", h, "");
+    DebugUVal("m:", m, "");
+    DebugUVal("s:", s, "");
+
     __asm__("halt");
     //
     DebugLn("======================== Hi Alert Triggered ===");
