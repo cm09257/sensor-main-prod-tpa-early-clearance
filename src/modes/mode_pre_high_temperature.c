@@ -65,14 +65,18 @@ void mode_pre_high_temperature_run(void)
     TMP126_Enable_THigh_Alert();
 
     // Enabling Interrupts
-    enableInterrupts();
 
     /// For Production: Version with ___HALT___
+    power_enter_halt();
+    delay(100);
+    enableInterrupts();
+    delay(100);
     __asm__("halt");
-    disableInterrupts();
+    //
     DebugLn("======================== Hi Alert Triggered ===");
     TMP126_Disable_THigh_Alert();
     TMP126_CloseForAlert();
+    disableInterrupts();
     state_transition(MODE_HIGH_TEMPERATURE);
 
     /* /// For Debug: Loop without ___HALT___

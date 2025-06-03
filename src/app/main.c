@@ -61,7 +61,7 @@ INTERRUPT_HANDLER(EXTI_PORT_C_IRQHandler, PORT_C_INTERRUPT_VECTOR) // TMP126 ALE
  * - Persistente Einstellungen
  */
 void system_init(void)
-{   
+{
     global_power_save();
     CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV8); // 2 MHz
     CLK_PeripheralClockConfig(CLK_PERIPHERAL_I2C, ENABLE);
@@ -74,14 +74,14 @@ void system_init(void)
 
     random_seed(0x1234); ///< Seed für Zufallsfunktionen setzen
 
-   // Flash_Init();
- //   internal_storage_init();
+    Flash_Init();
+    internal_storage_init();
     // settings_set_default();
     // settings_save();
- //   persist_current_mode(MODE_TEST);
+    //   persist_current_mode(MODE_TEST);
 
-  //  settings_load(); //  ///< Geräteeinstellungen (EEPROM) laden
- //   radio_init();    ///< RFM69 Funkmodul vorbereiten (z. B. Standby)
+    //  settings_load(); //  ///< Geräteeinstellungen (EEPROM) laden
+    //  radio_init();    ///< RFM69 Funkmodul vorbereiten (z. B. Standby)
 }
 
 /**
@@ -94,16 +94,8 @@ void main(void)
 {
     system_init(); ///< Systemkomponenten initialisieren
     DebugLn("[sensor-main] Finished system_init()");
-    Flash_Init();
-    DebugLn("[sensor-main] Flash Init finished");
 
-    storage_flash_test();
-
-    while(1)
-    {
-        nop();
-    }
-
+    // storage_flash_test();
 
     state_init(); ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
                   // DebugMenu_Init(); // Show Debug Menu

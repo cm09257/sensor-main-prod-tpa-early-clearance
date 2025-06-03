@@ -23,9 +23,12 @@ void rtc_init(void)
 void rtc_get_time(uint8_t *hour, uint8_t *minute, uint8_t *second)
 {
     //  DebugLn("In rtc_get_time");
+    MCP7940N_Open();
     delay(5);
     MCP7940N_GetTime(hour, minute, second);
     delay(5);
+    MCP7940N_Close();
+
     //  DebugLn("Leaving rtc_get_time");
     // Debug("[RTC] Aktuelle Uhrzeit: ");
     //   char buf[16];
@@ -53,9 +56,12 @@ void rtc_set_alarm(rtc_alarm_t alarm, uint8_t hour, uint8_t minute, uint8_t seco
     // char buf[20];
     // sprintf(buf, "-> %02u:%02u:%02u", hour, minute, second);
     // DebugLn(buf);
+    MCP7940N_Open();
     delay(5);
     MCP7940N_ConfigureAbsoluteAlarmX(alarm, hour, minute, second);
     //   DebugLn("Configured abs alarm");
+    delay(5);
+    MCP7940N_Close();
     delay(5);
 }
 
@@ -97,23 +103,40 @@ void rtc_set_alarm_offset(rtc_alarm_t alarm, uint8_t offset_minutes, uint8_t off
     new_s = (uint8_t)(remaining % 60UL);
 
     rtc_set_alarm(alarm, new_h, new_m, new_s);
+    MCP7940N_Open();
+    delay(5);
     MCP7940N_EnableAlarmX(alarm);
+    delay(5);
+    MCP7940N_Close();
+    delay(5);
 }
 
 void rtc_clear_alarm(rtc_alarm_t alarm)
 {
     DebugUVal("[RTC] Lösche Alarm", alarm, "");
+    MCP7940N_Open();
+    delay(5);
     MCP7940N_ClearAlarmFlagX(alarm);
+    delay(5);
     MCP7940N_DisableAlarmX(alarm);
+    delay(5);
+    MCP7940N_Close();
+    delay(5);
 }
 
 uint8_t rtc_was_alarm_triggered(rtc_alarm_t alarm)
 {
+    MCP7940N_Open();
+    delay(5);
     uint8_t result = (alarm == RTC_ALARM_0)
                          ? MCP7940N_IsAlarm0Triggered()
                          : MCP7940N_IsAlarm1Triggered();
 
     DebugUVal("[RTC] Alarm ausgelöst?", result, "");
+    delay(5);
+    MCP7940N_Close();
+    delay(5);
+
     return result;
 }
 
@@ -145,6 +168,13 @@ void rtc_set_unix_timestamp(uint32_t unix_time)
     uint8_t minutes = (total_seconds / 60) % 60;
     uint8_t seconds = total_seconds % 60;
 
+    delay(5);
+    MCP7940N_Open();
+    delay(5);
     MCP7940N_SetTime(hours, minutes, seconds);
+    delay(5);
+    MCP7940N_Close();
+    delay(5);
+
     DebugIVal("[RTC] Zeit gesetzt auf (Unix)", (int)unix_time, "s");
 }
