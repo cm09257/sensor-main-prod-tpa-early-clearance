@@ -16,7 +16,13 @@
 #include "periphery/hardware_resources.h"
 
 #define DEBUG_MODE_HI_TEMP 1
+#define DEV_HI_TEMP_SKIP_AFTER 3
+
 volatile bool mode_hi_temp_measurement_alert_triggered = FALSE;
+static uint8_t dev_hi_temp_counter = 0;
+#if defined(DEBUG_MODE_HI_TEMP)
+
+#endif
 
 void mode_high_temperature_run(void)
 {
@@ -72,6 +78,16 @@ void mode_high_temperature_run(void)
             }
 #endif
         }
+
+#if defined(DEBUG_MODE_HI_TEMP)
+        dev_hi_temp_counter++;
+        DebugUVal("[DEV] HighTemp Measurement Count: ", dev_hi_temp_counter, "");
+        if (dev_hi_temp_counter >= DEV_HI_TEMP_SKIP_AFTER)
+        {
+            DebugLn("[DEV] Threshold ignored -> Go to Copy & Change Mode");
+            temp = threshold - 1; // Schwellenwert künstlich unterschreiten
+        }
+#endif
 
         // Check if temperature is below threshold
         if (temp < threshold)
