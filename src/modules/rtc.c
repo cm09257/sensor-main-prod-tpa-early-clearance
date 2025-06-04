@@ -20,11 +20,8 @@ void rtc_init(void)
     rtc_enable_exti();
 }
 
-void *rtc_get_format_time(char *buf)
+void rtc_format_time(char *buf, uint8_t h, uint8_t m, uint8_t s)
 {
-    uint8_t h, m, s;
-    rtc_get_time(&h, &m, &s);
-
     buf[0] = '[';
     buf[1] = '0' + h / 10;
     buf[2] = '0' + h % 10;
@@ -36,24 +33,41 @@ void *rtc_get_format_time(char *buf)
     buf[8] = '0' + s % 10;
     buf[9] = ']';
     buf[10] = '\0';
-
 }
 
+void rtc_get_format_time(char *buf)
+{
+    uint8_t h, m, s;
+    rtc_get_time(&h, &m, &s);
+    rtc_format_time(buf, h, m, s);
+}
 
 void rtc_get_time(uint8_t *hour, uint8_t *minute, uint8_t *second)
 {
-  //    DebugLn("In rtc_get_time");
+    //    DebugLn("In rtc_get_time");
     MCP7940N_Open();
- //   DebugLn("rtc_get_time open done");
+    //   DebugLn("rtc_get_time open done");
     delay(5);
     MCP7940N_GetTime(hour, minute, second);
-  //  DebugLn("rtc_get_time MCP7940N_GetTime done");
+    //  DebugLn("rtc_get_time MCP7940N_GetTime done");
     delay(5);
     MCP7940N_Close();
     delay(5);
-   // DebugLn("rtc_get_time open done");
+    // DebugLn("rtc_get_time open done");
 
     //  DebugLn("Leaving rtc_get_time");
+}
+
+void rtc_clear_and_disable_alarm(uint8_t alarm)
+{
+    MCP7940N_Open();
+    delay(5);
+    MCP7940N_DisableAlarmX(alarm); // immediately disable and clear alarm
+    delay(5);
+    MCP7940N_ClearAlarmFlagX(alarm); // in ISR
+    delay(5);
+    MCP7940N_Close();
+    delay(5);
 }
 
 timestamp_t rtc_get_timestamp(void)
@@ -93,8 +107,12 @@ void rtc_set_alarm_in_minutes(rtc_alarm_t alarm, uint8_t delta_min)
     uint8_t new_m = (m + delta_min) % 60;
     uint8_t new_h = (h + (m + delta_min) / 60) % 24;
 
-    DebugUVal("Alarm m = ", new_m, "");
-    DebugUVal("Alarm s", s, "");
+    char buf[32];
+    rtc_format_time(buf, new_h, new_m, s);
+    Debug("Alarm at: ");
+    DebugLn(buf);
+    // DebugUVal("Alarm m = ", new_m, "");
+    // DebugUVal("Alarm s", s, "");
     rtc_set_alarm(alarm, new_h, new_m, s);
 }
 

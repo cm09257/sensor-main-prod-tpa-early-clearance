@@ -91,6 +91,7 @@ void mode_high_temperature_run(void)
         char buf[32];
         rtc_get_format_time(buf);
         DebugLn(buf);
+        
         rtc_set_alarm_in_minutes(RTC_ALARM_1, 1);
         delay(1000);
 #else
@@ -109,8 +110,9 @@ void mode_high_temperature_run(void)
         {
             nop();
         }
-        MCP7940N_DisableAlarmX(1);   // immediately disable and clear alarm
-        MCP7940N_ClearAlarmFlagX(1); // in ISR
+
+        rtc_clear_and_disable_alarm(RTC_ALARM_1);
+
         DebugLn("[MODE_HI_TEMP] Restarting main loop");
         mode_hi_temp_measurement_alert_triggered = FALSE;
     }
