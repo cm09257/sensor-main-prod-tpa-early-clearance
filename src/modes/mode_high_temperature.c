@@ -27,7 +27,7 @@ void mode_high_temperature_run(void)
     uint8_t interval_min = settings_get()->high_temp_measurement_interval_5min * 5;
 
    // DebugLn("[MODE_HI_TEMP] Settings loaded");
-   // DebugFVal("[MODE_HI_TEMP] Low temp threshold = ", threshold, "degC");
+    DebugFVal("[MODE_HI_TEMP] Low temp threshold = ", threshold, "degC");
    // DebugUVal("[MODE_HI_TEMP] Temperature measurement interval = ", interval_min, "min");
   //  DebugLn("");
   //  DebugLn("[MODE_HI_TEMP] Start measurement of cool-down phase ...");
@@ -43,7 +43,7 @@ void mode_high_temperature_run(void)
         float temp = TMP126_ReadTemperatureCelsius();
         TMP126_CloseForMeasurement();
         DebugFVal("[MODE_HI_TEMP] Temp readout = : ", temp, "degC");
-        Debug_I2C_PinModes();
+        // Debug_I2C_PinModes();
         // Create Data Record
         record_t rec;
         rec.timestamp = rtc_get_timestamp(); // 5-min Ticks
@@ -88,10 +88,9 @@ void mode_high_temperature_run(void)
         // Plan next temperature measurement using RTC alert
 
 #if defined(DEBUG_MODE_HI_TEMP)
-        uint8_t h, m, s;
-        rtc_get_time(&h, &m, &s);
-        DebugUVal("Current m = ", m, "");
-        DebugUVal("Current s", s, "");
+        char buf[32];
+        rtc_get_format_time(buf);
+        DebugLn(buf);
         rtc_set_alarm_in_minutes(RTC_ALARM_1, 1);
         delay(1000);
 #else

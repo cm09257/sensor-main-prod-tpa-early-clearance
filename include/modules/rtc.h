@@ -34,4 +34,6 @@ void rtc_set_periodic_alarm_15min(void);
 void rtc_set_periodic_alarm_30min(void);
 void rtc_set_periodic_alarm_hourly(void);
 
+void *rtc_get_format_time(char *buf);
+
 #endif // RTC_H

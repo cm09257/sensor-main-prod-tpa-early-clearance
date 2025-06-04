@@ -20,24 +20,40 @@ void rtc_init(void)
     rtc_enable_exti();
 }
 
+void *rtc_get_format_time(char *buf)
+{
+    uint8_t h, m, s;
+    rtc_get_time(&h, &m, &s);
+
+    buf[0] = '[';
+    buf[1] = '0' + h / 10;
+    buf[2] = '0' + h % 10;
+    buf[3] = ':';
+    buf[4] = '0' + m / 10;
+    buf[5] = '0' + m % 10;
+    buf[6] = ':';
+    buf[7] = '0' + s / 10;
+    buf[8] = '0' + s % 10;
+    buf[9] = ']';
+    buf[10] = '\0';
+
+}
+
+
 void rtc_get_time(uint8_t *hour, uint8_t *minute, uint8_t *second)
 {
-      DebugLn("In rtc_get_time");
+  //    DebugLn("In rtc_get_time");
     MCP7940N_Open();
-    DebugLn("rtc_get_time open done");
+ //   DebugLn("rtc_get_time open done");
     delay(5);
     MCP7940N_GetTime(hour, minute, second);
-    DebugLn("rtc_get_time MCP7940N_GetTime done");
+  //  DebugLn("rtc_get_time MCP7940N_GetTime done");
     delay(5);
     MCP7940N_Close();
     delay(5);
-    DebugLn("rtc_get_time open done");
+   // DebugLn("rtc_get_time open done");
 
     //  DebugLn("Leaving rtc_get_time");
-    // Debug("[RTC] Aktuelle Uhrzeit: ");
-    //   char buf[16];
-    // sprintf(buf, "%02u:%02u:%02u", *hour, *minute, *second);
-    //  DebugLn(buf);
 }
 
 timestamp_t rtc_get_timestamp(void)
