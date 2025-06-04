@@ -51,32 +51,29 @@ bool internal_flash_write_record(const record_t* rec)
 bool internal_flash_read_record(uint16_t index, record_t* out)
 {
     if (!out) return FALSE;
-    uint32_t addr = INTERNAL_EEPROM_START + (index * 5);
 
-    if (addr + 5 > (INTERNAL_EEPROM_START + INTERNAL_EEPROM_SIZE)) {
-        DebugUVal("[internal] Read-Fehler: Index außerhalb", index, "");
-        return FALSE;
-    }
+    if (index >= (INTERNAL_EEPROM_SIZE / 5)) return FALSE;
 
-    uint8_t raw[5];
+    uint32_t addr = INTERNAL_EEPROM_START + (uint32_t)index * 5;
+
+    static uint8_t raw[5]; // statisch statt Stack
+
+    // Zugriff nur zur Laufzeit
     for (uint8_t i = 0; i < 5; i++) {
-        raw[i] = *(uint8_t*)(addr + i);
+        raw[i] = FLASH_ReadByte(addr + i);
     }
 
     uint16_t ts16 = (raw[1] << 8) | raw[0];
     int16_t temp_fixed = (raw[3] << 8) | raw[2];
 
-    out->timestamp   = ts16;
+    out->timestamp = ts16;
     out->temperature = temp_fixed / 100.0f;
-    out->flags       = raw[4];
-
-  //  DebugUVal("[internal] Read: Index", index, "");
- //   DebugUVal("           Timestamp", ts16, "");
- //   DebugIVal("           Temp x100", temp_fixed, "");
-  //  DebugUVal("           Flags", out->flags, "");
+    out->flags = raw[4];
 
     return TRUE;
 }
+
+
 
 uint16_t internal_flash_get_count(void)
 {

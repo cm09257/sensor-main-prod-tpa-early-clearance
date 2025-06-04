@@ -62,10 +62,13 @@ INTERRUPT_HANDLER(EXTI_PORT_C_IRQHandler, PORT_C_INTERRUPT_VECTOR) // TMP126 ALE
  */
 void system_init(void)
 {
+    UART1_MyInit(); ///< Debug UART konfigurieren (9600 8N1)
+    DebugLn("=================== SENSOR MAIN");
+    DebugLn("[system_init]");
     global_power_save();
     CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV8); // 2 MHz
     CLK_PeripheralClockConfig(CLK_PERIPHERAL_I2C, ENABLE);
-    UART1_MyInit(); ///< Debug UART konfigurieren (9600 8N1)
+
     I2C_Devices_Init();
     TMP126_init(); // TMP126 initialisieren.
     delay(100);

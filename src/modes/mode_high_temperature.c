@@ -96,7 +96,7 @@ void mode_high_temperature_run(void)
 
             copy_internal_to_external_flash();
             DebugLn("[MODE_HI_TEMP] Copied data from internal to external flash");
-
+            //storage_debug_dump_records();
             state_transition(MODE_OPERATIONAL);
             return;
         }

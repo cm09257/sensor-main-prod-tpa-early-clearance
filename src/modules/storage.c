@@ -276,6 +276,53 @@ bool flash_write_record_nolock(const record_t *rec)
            ((write_ptr += RECORD_SIZE_BYTES), TRUE);
 }
 
+/*void storage_debug_dump_records(void)
+{
+    DebugLn("=== [DEBUG] Flash-Dump: Erste 3 Datensätze ===");
+
+    record_t rec;
+
+    DebugLn("-- Interner Flash --");
+    // i = 0
+ /*   internal_flash_read_record(0, &rec);
+    DebugUVal("Index ", 0, "");
+    DebugUVal("  Timestamp (x5min):", rec.timestamp, "");
+    DebugFVal("  Temperatur: ", rec.temperature, "°C");
+    DebugUVal("  Flags:", rec.flags, ""); DebugLn("");
+    // i = 1
+    internal_flash_read_record(1, &rec);
+    DebugUVal("Index ", 1, "");
+    DebugUVal("  Timestamp (x5min):", rec.timestamp, "");
+    DebugFVal("  Temperatur: ", rec.temperature, "°C");
+    DebugUVal("  Flags:", rec.flags, ""); DebugLn("");
+    // i = 2
+    internal_flash_read_record(2, &rec);
+    DebugUVal("Index ", 2, "");
+    DebugUVal("  Timestamp (x5min):", rec.timestamp, "");
+    DebugFVal("  Temperatur: ", rec.temperature, "°C");
+    DebugUVal("  Flags:", rec.flags, ""); DebugLn("");
+*/
+    /*
+    DebugLn("-- Externer Flash --");
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        if (flash_read_record(i, &rec))
+        {
+            DebugUVal("Index ", i, "");
+            DebugUVal("  Timestamp (x5min):", rec.timestamp, "");
+            DebugFVal("  Temperatur: ", rec.temperature, "°C");
+            DebugUVal("  Flags:", rec.flags, "");
+        }
+        else
+        {
+            DebugUVal("[!] Kein gültiger externer Datensatz bei Index ", i, "");
+            break;
+        }
+    }*/
+
+ /*   DebugLn("=== [ENDE] ===");
+}*/
+
 bool copy_internal_to_external_flash(void)
 {
     uint16_t total = internal_flash_get_count();
@@ -392,4 +439,3 @@ void storage_flash_test(void)
     else
         DebugLn("[FAIL] Flash-Daten stimmen nicht überein");
 }
-
