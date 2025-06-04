@@ -12,6 +12,7 @@
 #include "modules/rtc.h"
 #include "periphery/power.h"
 #include "periphery/tmp126.h"
+#include "periphery/uart.h"
 #include "periphery/mcp7940n.h"
 #include "periphery/hardware_resources.h"
 
@@ -27,7 +28,7 @@ static uint8_t hi_temp_buffer_index = 0;
 void mode_high_temperature_run(void)
 {
     DebugLn("=== MODE_HIGH_TEMPERATURE START ===");
-    settings_set_cool_down_threshold(24.0f);
+    settings_set_cool_down_threshold(21.0f);
 
     ///// Loading settings
     float threshold = settings_get()->cool_down_threshold;
@@ -98,6 +99,23 @@ void mode_high_temperature_run(void)
             }
             DebugLn("[MODE_HI_TEMP] RAM-Data copied to external flash");
             hi_temp_buffer_index = 0;
+
+            // DebugLn("[DEBUG] Lese erste 3 Datensaetze aus externem Flash...");
+
+            record_t rec;
+            flash_read_record(0, &rec);
+            uint16_t ts = rec.timestamp;
+            float tm = rec.temperature;
+            uint8_t fl = rec.flags;
+
+            char buf[32];
+            sprintf(buf, "record temp = %u", (uint8_t)tm);
+            DebugLn(buf);
+            // DebugLn("Index 0");
+            // DebugUVal("  Timestamp = ", ts, " x5min");
+            // DebugFVal("  Temperature = ", tm, "degC");
+            // DebugUVal("  Flag = ", fl, " (1 = ok)");
+
             state_transition(MODE_OPERATIONAL);
             return;
         }

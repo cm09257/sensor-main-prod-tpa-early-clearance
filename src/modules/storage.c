@@ -207,7 +207,7 @@ bool flash_read_record(uint16_t index, record_t *out)
 
     if (!Flash_Open())
     {
-        DebugLn("[flash] Öffnen des Flash fehlgeschlagen");
+        DebugLn("[flash] Open flash failed");
         return FALSE;
     }
 
@@ -219,7 +219,8 @@ bool flash_read_record(uint16_t index, record_t *out)
 
     if (!ok)
     {
-        DebugUVal("[flash] Lesen fehlgeschlagen bei Index ", index, "");
+        DebugLn("[flash] Read fail");
+       // DebugUVal("[flash] Rad fail at index ", index, "");
         return FALSE;
     }
 
@@ -228,7 +229,8 @@ bool flash_read_record(uint16_t index, record_t *out)
     uint8_t expected_crc = crc4_timestamp(ts);
     if ((expected_crc & 0x0F) != crc4)
     {
-        DebugUVal("[flash] CRC4 Fehler bei Index ", index, "");
+        DebugLn("[flash] CRC error");
+       // DebugUVal("[flash] CRC4 Fehler bei Index ", index, "");
         return FALSE;
     }
 
@@ -238,9 +240,9 @@ bool flash_read_record(uint16_t index, record_t *out)
     out->temperature = ((float)temp_fixed / 16.0f) - 50.0f;
     out->flags = raw[4] & 0x0F;
 
-    DebugUVal("[flash] Gelesen: Timestamp", ts, "");
-    DebugIVal("          Temp", (int)(out->temperature * 100), " x0.01C");
-    DebugUVal("          Flags", out->flags, "");
+  //  DebugUVal("[flash] Gelesen: Timestamp", ts, "");
+ //   DebugIVal("          Temp", (int)(out->temperature * 100), " x0.01C");
+  ///  DebugUVal("          Flags", out->flags, "");
 
     return TRUE;
 }
