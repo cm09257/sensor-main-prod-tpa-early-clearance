@@ -26,11 +26,11 @@ void mode_high_temperature_run(void)
     float threshold = settings_get()->cool_down_threshold;
     uint8_t interval_min = settings_get()->high_temp_measurement_interval_5min * 5;
 
-   // DebugLn("[MODE_HI_TEMP] Settings loaded");
+    // DebugLn("[MODE_HI_TEMP] Settings loaded");
     DebugFVal("[MODE_HI_TEMP] Low temp threshold = ", threshold, "degC");
-   // DebugUVal("[MODE_HI_TEMP] Temperature measurement interval = ", interval_min, "min");
-  //  DebugLn("");
-  //  DebugLn("[MODE_HI_TEMP] Start measurement of cool-down phase ...");
+    // DebugUVal("[MODE_HI_TEMP] Temperature measurement interval = ", interval_min, "min");
+    //  DebugLn("");
+    //  DebugLn("[MODE_HI_TEMP] Start measurement of cool-down phase ...");
 
     // Configuring RTC EXTI
     GPIO_Init(RTC_WAKE_PORT, RTC_WAKE_PIN, GPIO_MODE_IN_FL_IT);
@@ -61,14 +61,14 @@ void mode_high_temperature_run(void)
         else
         {
 #if defined(DEBUG_MODE_HI_TEMP)
-          //  DebugLn("[MODE_HI_TEMP] Saved record to internal flash");
+            //  DebugLn("[MODE_HI_TEMP] Saved record to internal flash");
             record_t validation_read_record;
             if (internal_flash_read_record(0, &validation_read_record))
             {
-              //  DebugLn("[MODE_HI_TEMP] Re-Read from internal flash successful");
-              //  DebugUVal("[MODE_HI_TEMP] Validation timestamp = ", validation_read_record.timestamp, "x 5min");
-              //  DebugUVal("[MODE_HI_TEMP] Validation temperature = ", validation_read_record.temperature, "degC");
-               // DebugUVal("[MODE_HI_TEMP] Validation data ok flag = ", validation_read_record.flags, "(1=ok)");
+                //  DebugLn("[MODE_HI_TEMP] Re-Read from internal flash successful");
+                //  DebugUVal("[MODE_HI_TEMP] Validation timestamp = ", validation_read_record.timestamp, "x 5min");
+                //  DebugUVal("[MODE_HI_TEMP] Validation temperature = ", validation_read_record.temperature, "degC");
+                // DebugUVal("[MODE_HI_TEMP] Validation data ok flag = ", validation_read_record.flags, "(1=ok)");
             }
 #endif
         }
@@ -91,7 +91,7 @@ void mode_high_temperature_run(void)
         char buf[32];
         rtc_get_format_time(buf);
         DebugLn(buf);
-        
+
         rtc_set_alarm_in_minutes(RTC_ALARM_1, 1);
         delay(1000);
 #else
@@ -99,21 +99,33 @@ void mode_high_temperature_run(void)
         rtc_set_alarm_in_minutes(RTC_ALARM_1, interval_min);
 #endif
         mode_before_halt = MODE_HIGH_TEMPERATURE;
-        enableInterrupts();
 
         // e) Schlafmodus
         DebugLn("[MODE_HI_TEMP] HALT until next RTC-Alarm");
 
-        // Warten auf Alert (Polling-Variante, falls HALT noch nicht aktiv)
-        // TODO: Replace by power_enter_halt(); once completed
-        while (!mode_hi_temp_measurement_alert_triggered)
-        {
-            nop();
-        }
+        // In HALT gehen (wird durch RTC-Interrupt verlassen)
+        power_enter_halt();
+        delay(100);
+        enableInterrupts();
+        __asm__("halt");
 
+        // Nach HALT: RTC-Interrupt wurde ausgelöst
         rtc_clear_and_disable_alarm(RTC_ALARM_1);
 
         DebugLn("[MODE_HI_TEMP] Restarting main loop");
         mode_hi_temp_measurement_alert_triggered = FALSE;
+
+        /*
+                // Warten auf Alert (Polling-Variante, falls HALT noch nicht aktiv)
+                // TODO: Replace by power_enter_halt(); once completed
+                while (!mode_hi_temp_measurement_alert_triggered)
+                {
+                    nop();
+                }
+
+                rtc_clear_and_disable_alarm(RTC_ALARM_1);
+
+                DebugLn("[MODE_HI_TEMP] Restarting main loop");
+                mode_hi_temp_measurement_alert_triggered = FALSE;*/
     }
 }
