@@ -33,9 +33,7 @@ void mode_operational_run(void)
 
     timestamp_t ts = rtc_get_timestamp();
     Debug("[OPERATIONAL] Zeitstempel: ");
-    char ts_str[12];
-    sprintf(ts_str, "%lu", (unsigned long)ts);
-    DebugLn(ts_str);
+    DebugUVal("Timestamp = ", (uint16_t)ts, "");
 
     record_t rec;
     rec.timestamp = ts;

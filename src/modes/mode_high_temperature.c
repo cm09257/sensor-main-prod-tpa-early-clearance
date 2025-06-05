@@ -108,9 +108,7 @@ void mode_high_temperature_run(void)
             float tm = rec.temperature;
             uint8_t fl = rec.flags;
 
-            char buf[32];
-            sprintf(buf, "record temp = %u", (uint8_t)tm);
-            DebugLn(buf);
+            DebugUVal("record temp = ", (uint8_t)tm, "degC");
             // DebugLn("Index 0");
             // DebugUVal("  Timestamp = ", ts, " x5min");
             // DebugFVal("  Temperature = ", tm, "degC");

@@ -20,15 +20,12 @@ void DebugMenu_Init(void)
     DebugLn("  Available Modes:");
     for (uint8_t i = 0; i < MODE_COUNT; i++)
     {
-        char buf[48];
-        sprintf(buf, "    %u = MODE_%s", i, mode_name((mode_t)i));
-        DebugLn(buf);
+        DebugUVal("     ", i, mode_name((mode_t)i));
     }
 
     // Aktueller Modus anzeigen
-    char buf[48];
-    sprintf(buf, "[Current Mode] MODE_%s", mode_name(state_get_current()));
-    DebugLn(buf);
+    DebugLn("[Current Mode]:");
+    DebugLn(mode_name(state_get_current()));
 }
 
 bool DebugMenu_Update(void)
@@ -51,10 +48,9 @@ bool DebugMenu_Update(void)
     }
     case 'r':
     {
-        uint8_t h, m, s;
-        rtc_get_time(&h, &m, &s);
+       
         char buf[32];
-        sprintf(buf, "[RTC] %02u:%02u:%02u", h, m, s);
+        rtc_get_format_time(buf);
         DebugLn(buf);
         break;
     }
@@ -71,9 +67,10 @@ bool DebugMenu_Update(void)
             uint8_t mode = rx_buffer - '0';
             if (mode < MODE_COUNT)
             {
-                char buf[48];
-                sprintf(buf, "[Manuell] Setze Modus auf MODE_%s", mode_name((mode_t)mode));
-                DebugLn(buf);
+                
+                DebugLn("[Manuell] Setze Modus auf MODE:");
+                DebugLn(mode_name((mode_t)mode));
+                
                 state_transition((mode_t)mode);
             }
             else

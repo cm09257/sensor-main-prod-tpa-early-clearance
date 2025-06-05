@@ -78,7 +78,7 @@ timestamp_t rtc_get_timestamp(void)
 
     // Debug("[RTC] Timestamp (5-min): ");
     // char ts_str[12];
-    // sprintf(ts_str, "%lu", (unsigned long)ts);
+    // (ts_str, "%lu", (unsigned long)ts);
     // DebugLn(ts_str);
 
     return ts;
@@ -88,7 +88,7 @@ void rtc_set_alarm(rtc_alarm_t alarm, uint8_t hour, uint8_t minute, uint8_t seco
 {
     // DebugUVal("[RTC] Setze Alarm", alarm, "");
     // char buf[20];
-    // sprintf(buf, "-> %02u:%02u:%02u", hour, minute, second);
+    // (buf, "-> %02u:%02u:%02u", hour, minute, second);
     // DebugLn(buf);
     MCP7940N_Open();
     delay(5);
@@ -120,7 +120,7 @@ void rtc_set_alarm_offset(rtc_alarm_t alarm, uint8_t offset_minutes, uint8_t off
 {
     Debug("[RTC] Alarm-Offset: ");
     char msg[32];
-    sprintf(msg, "%u min, %u s", offset_minutes, offset_seconds);
+    rtc_format_time(msg, 0, offset_minutes, offset_seconds);
     DebugLn(msg);
 
     uint8_t h, m, s;
