@@ -103,7 +103,9 @@ uint16_t flash_get_count(void);
  * Wird z. B. nach dem HIGH_TEMPERATURE-Modus aufgerufen.
  * @return TRUE bei Erfolg, sonst FALSE
  */
-bool copy_internal_to_external_flash(void);
+// bool copy_internal_to_external_flash(void);
+
+bool flash_write_record_nolock(const record_t *rec);
 
 //void storage_debug_dump_records(void);
 void storage_flash_test(void);

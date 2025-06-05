@@ -18,6 +18,7 @@
 #include "periphery/power.h"
 #include "periphery/flash.h"
 #include "periphery/i2c_devices.h"
+#include "periphery/spi_devices.h"
 #include "modules/radio.h"
 #include "modules/settings.h"
 #include "modules/storage_internal.h"
@@ -29,6 +30,9 @@
 #include "utility/delay.h"
 #include "utility/random.h"
 #include "stm8s_clk.h"
+#include "common/types.h"
+#include "utility/u8toa.h"
+#include <string.h>
 
 INTERRUPT_HANDLER(EXTI_PORT_D_IRQHandler, PORT_D_INTERRUPT_VECTOR) // RTC_WAKE = PD2
 {
@@ -87,6 +91,7 @@ void system_init(void)
     //  radio_init();    ///< RFM69 Funkmodul vorbereiten (z. B. Standby)
 }
 
+
 /**
  * @brief Hauptprogramm.
  *
@@ -98,35 +103,92 @@ void main(void)
     system_init(); ///< Systemkomponenten initialisieren
     DebugLn("[sensor-main] Finished system_init()");
 
-    // storage_flash_test();
+    Flash_Open();
+    DebugLn("Flash open");
 
-    state_init(); ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
-                  // DebugMenu_Init(); // Show Debug Menu
+   // uint8_t mfg8, type8, capacity8;
+    uint16_t mfg, type, capacity;
 
-    // DebugLn("[sensor-main] Going into mode MODE_PRE_HIGH_TEMP");
-    set_mode_debug_only(MODE_PRE_HIGH_TEMP);
-    // DebugLn("[sensor-main] MODE_PRE_HIGH_TEMP set.");
+    spi_flash_select();
+    spi_flash_transfer(0x9F); // JEDEC ID command
+    mfg = spi_flash_transfer(0x00);
+    type = spi_flash_transfer(0x00);
+    capacity = spi_flash_transfer(0x00);
+    spi_flash_unselect();
+
+    DebugUVal("mfg = ",mfg,"x");
+  //  mfg = (uint16_t)mfg8;
+  //  type = (uint16_t)type8;
+  //  capacity = (uint16_t)capacity8;
+    DebugLn("done");
+
+ //   char valstr[8];
+ //   strcpy(valstr, "penil");
+    
+   // u8toa(mfg, valstr);
+   // UART1_SendString("mfg = ");
+   // UART1_SendString(valstr);
+  //  UART1_SendString(unit);
+ //   UART1_SendString("\r\n");
+
+    /*    DebugUVal("TYPE=",type,"");
+        DebugUVal("CAP=", capacity,"");
+    */
     while (1)
     {
-        //       DebugLn("[sensor-main] In main while-loop.");
-        state_process();
-        // DebugMenu_Update();
+        nop();
     }
     /*
-        char buf[20];
+        // storage_flash_test();
+
+        uint8_t count = flash_get_count();
+        DebugUVal(" Flash Record Count ", count, "");
+
+        record_t rec;
+        rec.timestamp = 5;
+        rec.temperature = 21.3f;
+        rec.flags = 1;
+
+        if (flash_write_record_nolock(&rec))
+            DebugLn("flash write ok.");
+        else
+            DebugLn("flash write not ok");
+
+        count = flash_get_count();
+        DebugUVal(" Flash Record Count ", count, "");
+
+        delay(1000);
+
+        record_t read_record;
+        flash_read_record(0, &read_record);
+        uint8_t ts = read_record.timestamp;
+        float te = read_record.temperature;
+        uint8_t fl = read_record.flags;
+
+        DebugLn("[Flash] Lese Datensatz aus Flash");
+        DebugUVal("-> Timestamp   = ", ts, "");
+        DebugFVal("-> Temperature = ", te, "");
+        DebugUVal("-> Flags       = ", fl, "");
+
         while (1)
         {
-            uint8_t hour, min, sec;
-            MCP7940N_GetTime(&hour, &min, &sec);
-            DebugUVal("h:", hour, "");
-            DebugUVal("m:", min, "");
-            DebugUVal("s:", sec, "");
+            nop();
+        }
 
-            TMP126_OpenForMeasurement();
-            TMP126_Format_Temperature(buf);
-            TMP126_CloseForMeasurement();
-            DebugLn(buf);
+    */
+    /*
+        state_init(); ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
+                      // DebugMenu_Init(); // Show Debug Menu
 
-            delay(5000); // 5 Sekunden
-        }*/
+        // DebugLn("[sensor-main] Going into mode MODE_PRE_HIGH_TEMP");
+        set_mode_debug_only(MODE_PRE_HIGH_TEMP);
+        // DebugLn("[sensor-main] MODE_PRE_HIGH_TEMP set.");
+        while (1)
+        {
+            //       DebugLn("[sensor-main] In main while-loop.");
+            state_process();
+            // DebugMenu_Update();
+        }
+
+     */
 }

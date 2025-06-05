@@ -91,7 +91,7 @@ void mode_high_temperature_run(void)
             DebugLn("[MODE_HI_TEMP] Temperature below threshold -> Copy data and change mode");
             for (uint8_t i = 0; i < hi_temp_buffer_index; i++)
             {
-                if (!flash_write_record(&hi_temp_buffer[i]))
+                if (!flash_write_record_nolock(&hi_temp_buffer[i]))
                 {
                     DebugUVal("[MODE_HI_TEMP] Error writing external flash for record with index ", i, "");
                     break;
