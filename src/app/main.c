@@ -91,7 +91,6 @@ void system_init(void)
     //  radio_init();    ///< RFM69 Funkmodul vorbereiten (z. B. Standby)
 }
 
-
 /**
  * @brief Hauptprogramm.
  *
@@ -106,7 +105,6 @@ void main(void)
     Flash_Open();
     DebugLn("Flash open");
 
-   // uint8_t mfg8, type8, capacity8;
     uint16_t mfg, type, capacity;
 
     spi_flash_select();
@@ -116,52 +114,75 @@ void main(void)
     capacity = spi_flash_transfer(0x00);
     spi_flash_unselect();
 
-    DebugUVal("mfg = ",mfg,"x");
-  //  mfg = (uint16_t)mfg8;
-  //  type = (uint16_t)type8;
-  //  capacity = (uint16_t)capacity8;
-    DebugLn("done");
+    DebugHex16("mfg      = ", mfg);
+    DebugHex16("type     = ", type);
+    DebugHex16("capacity =", capacity);
 
- //   char valstr[8];
- //   strcpy(valstr, "penil");
-    
-   // u8toa(mfg, valstr);
-   // UART1_SendString("mfg = ");
-   // UART1_SendString(valstr);
-  //  UART1_SendString(unit);
- //   UART1_SendString("\r\n");
+    // storage_flash_test();
 
-    /*    DebugUVal("TYPE=",type,"");
-        DebugUVal("CAP=", capacity,"");
-    */
-    while (1)
-    {
-        nop();
-    }
-    /*
-        // storage_flash_test();
+    // uint8_t count = flash_get_count();
+    // DebugUVal(" Flash Record Count ", count, "");
 
-        uint8_t count = flash_get_count();
-        DebugUVal(" Flash Record Count ", count, "");
+    record_t rec;
+    rec.timestamp = 5;
+    rec.temperature = 25.3f;
+    rec.flags = 1;
 
-        record_t rec;
-        rec.timestamp = 5;
-        rec.temperature = 21.3f;
-        rec.flags = 1;
+    uint8_t record_data[6];
 
-        if (flash_write_record_nolock(&rec))
-            DebugLn("flash write ok.");
-        else
-            DebugLn("flash write not ok");
+    // Timestamp (4 Byte, little endian)
+    record_data[0] = (uint8_t)(rec.timestamp & 0xFF);
+    record_data[1] = (uint8_t)((rec.timestamp >> 8) & 0xFF);
+    record_data[2] = (uint8_t)((rec.timestamp >> 16) & 0xFF);
+    record_data[3] = (uint8_t)((rec.timestamp >> 24) & 0xFF);
 
-        count = flash_get_count();
-        DebugUVal(" Flash Record Count ", count, "");
+    // Temperatur mit Offset –50 °C (1 Byte)
+    record_data[4] = (uint8_t)(rec.temperature + 50.0f + 0.5f);
 
-        delay(1000);
+    // Flags (1 Byte)
+    record_data[5] = rec.flags;
 
-        record_t read_record;
-        flash_read_record(0, &read_record);
-        uint8_t ts = read_record.timestamp;
+    Flash_PageProgram(0x0000, record_data, 6);
+
+    DebugLn("Flash written");
+
+    uint8_t read[6];
+    // Flash_ReadData(0x0000, read, 6);
+
+    read[0] = 0x11;
+    read[1] = 0x22;
+    read[2] = 0x33;
+    read[3] = 0x44;
+    read[4] = 0x55;
+    read[5] = 0x66;
+
+    uint8_t read0, read1, read2, read3, read4, read5;
+    read0 = read[0];
+    read1 = read[1];
+    read2 = read[2];
+    read3 = read[3];
+    read4 = read[4];
+    read5 = read[5];
+
+    DebugHex("read[0] =", read0);
+  //  DebugHex("read[1] =", read1);
+    //DebugHex("read[2] =", read2);
+//    DebugHex("read[3] =", read3);
+ //     DebugHex("read[4] =", read4);
+ //     DebugHex("read[5] =", read5);
+
+    DebugUVal("temp ", read[4] - 50, "degC");
+
+    //   count = flash_get_count();
+    //  DebugUVal(" Flash Record Count ", count, "");
+
+    delay(1000);
+
+    //  uint8_t record_data[5];
+
+    // record_t read_record;
+    //  flash_read_record(0, &read_record);
+    /*    uint8_t ts = read_record.timestamp;
         float te = read_record.temperature;
         uint8_t fl = read_record.flags;
 
@@ -169,13 +190,12 @@ void main(void)
         DebugUVal("-> Timestamp   = ", ts, "");
         DebugFVal("-> Temperature = ", te, "");
         DebugUVal("-> Flags       = ", fl, "");
-
-        while (1)
-        {
-            nop();
-        }
-
     */
+    while (1)
+    {
+        nop();
+    }
+
     /*
         state_init(); ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
                       // DebugMenu_Init(); // Show Debug Menu

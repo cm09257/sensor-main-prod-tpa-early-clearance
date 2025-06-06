@@ -226,16 +226,17 @@ bool flash_read_record(uint16_t index, record_t *out) // external flash
     DebugUVal("Read Addr LOW ", addr_lo, "");
     DebugUVal("Read Addr HIGH", addr_hi, "");
 
-    bool ok = Flash_ReadData(addr, raw, RECORD_SIZE_BYTES);
+    //bool ok =
+     Flash_ReadData(addr, raw, RECORD_SIZE_BYTES);
 
     Flash_Close();
-
+/*
     if (!ok)
     {
         DebugLn("[flash] Read fail");
         // DebugUVal("[flash] Rad fail at index ", index, "");
         return FALSE;
-    }
+    }*/
 
     uint32_t ts = ((uint32_t)(raw[2] >> 4) << 16) | ((uint16_t)raw[1] << 8) | raw[0];
     uint8_t crc4 = raw[2] & 0x0F;
@@ -348,13 +349,16 @@ void storage_flash_test(void) // external flash
         return;
     }
 
+
+    Flash_ReadData(test_addr, read_buf, test_len);
+/*
     if (!Flash_ReadData(test_addr, read_buf, test_len))
     {
         DebugLn("[storage_flat] Lesen fehlgeschlagen");
         Flash_Close();
         return;
     }
-
+*/
     Flash_Close();
 
     // 5. Validieren
