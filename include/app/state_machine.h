@@ -9,19 +9,19 @@
 // === Interner Zustand ===
 
 /// Aktueller Modus (default: TEST)
-static mode_t current_mode = MODE_TEST;
+extern mode_t current_mode;
 
 /// Letzter Zeitstempel einer Messung (für spätere Plausibilitätsprüfungen)
-static timestamp_t last_measurement_ts = 0;
+extern timestamp_t last_measurement_ts;
 
 /// Wird gesetzt, wenn ein Zustandswechsel am Ende von state_process() erfolgen soll
-static bool mode_transition_pending = FALSE;
+extern bool mode_transition_pending;
 
 /// Modus vor Sleep (z. B. zur Rückkehr nach TEMP_ALERT)
 extern mode_t mode_before_halt;
 
 /// Vormerkung für nächsten Modus (bei Übergang)
-static mode_t next_mode;
+extern mode_t next_mode;
 
 
 /**

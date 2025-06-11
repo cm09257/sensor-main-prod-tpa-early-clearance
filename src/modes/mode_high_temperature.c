@@ -27,7 +27,7 @@ static uint8_t hi_temp_buffer_index = 0;
 
 void mode_high_temperature_run(void)
 {
-    DebugLn("=== MODE_HIGH_TEMPERATURE START ===");
+    DebugLn("=============== MODE_HIGH_TEMPERATURE START ===============");
     settings_set_cool_down_threshold(21.0f);
 
     ///// Loading settings

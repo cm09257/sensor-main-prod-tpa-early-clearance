@@ -1,6 +1,6 @@
 #include "stm8s.h"
 #include "modes/mode_wait_for_activation.h"
-#include "modules/radio.h"
+//#include "modules/radio.h"
 #include "modules/settings.h"
 #include "modules/rtc.h"
 #include "utility/debug.h"
@@ -15,16 +15,17 @@
 #define PING_INTERVAL_MINUTES 60
 #endif
 
+/*
 void mode_wait_for_activation_run(void)
 {
-    DebugLn("=== MODE_WAIT_FOR_ACTIVATION ===");
-    DebugLn("[ACT] Starte zyklischen Aktivierungsversuch per Funk...");
+    DebugLn("=============== MODE_WAIT_FOR_ACTIVATION ===============");
+    DebugLn("[MODE_WAIT_FOR_ACTIVATION] Starting periodic activation requests via RF...");
 
     uint8_t retry_count = 0;
 
     while (state_get_current() == MODE_WAIT_FOR_ACTIVATION)
     {
-        DebugUVal("[ACT] Sende Aktivierungs-Ping, Versuch", retry_count + 1, "");
+        DebugUVal("[MODE_WAIT_FOR_ACTIVATION] Sending activation request ping, try no. ", retry_count + 1, "...");
 
         // 1. Ping senden
         radio_send_ping(RADIO_PING_HEADER_ACTIVATION);
@@ -35,15 +36,15 @@ void mode_wait_for_activation_run(void)
         // 3. Wenn aktiviert → Schleife verlassen
         if (activated)
         {
-            DebugLn("[ACT] Gateway hat Aktivierung bestätigt!");
+            DebugLn("[MODE_WAIT_FOR_ACTIVATION] Gateway has confirmed activation!");
             break;
         }
 
-        DebugLn("[ACT] Noch keine Aktivierung erhalten");
+        DebugLn("[MODE_WAIT_FOR_ACTIVATION] No activation requested yet.");
 
         // 4. Nächsten Wakeup-Timer setzen
 #if DEV_MODE
-        DebugLn("[ACT] Dev-Mode: Setze Alarm 1 auf 30s später");
+        DebugLn("[MODE_WAIT_FOR_ACTIVATION] Dev-Mode: Setting Alarm 1 to 30s later...");
         rtc_set_alarm_offset(RTC_ALARM_1, 0, PING_INTERVAL_FROM_NOW);
 #else
         if (retry_count < 3)
@@ -61,10 +62,16 @@ void mode_wait_for_activation_run(void)
 #endif
 
         // 5. Sleep bis RTC-Alarm
-        DebugLn("[ACT] Gehe in Sleep bis nächster RTC-Alarm (Alarm 1)");
+        DebugLn("[MODE_WAIT_FOR_ACTIVATION] Go to sleep until next RTC alarm.");
         mode_before_halt = MODE_WAIT_FOR_ACTIVATION;
         power_enter_halt();
+        // TODO: enable interrupts, asm halt, etc...
     }
 
-    DebugLn("[ACT] Verlasse MODE_WAIT_FOR_ACTIVATION");
+    DebugLn("[MODE_WAIT_FOR_ACTIVATION] Leaving MODE_WAIT_FOR_ACTIVATION...");
+}
+*/
+void mode_wait_for_activation_run(void)
+{
+    nop();
 }

@@ -1,7 +1,7 @@
 #include "app/state_machine.h"
 #include "common/types.h"
 #include "modes/mode_operational.h"
-#include "modules/radio.h"
+//#include "modules/radio.h"
 #include "modules/settings.h"
 #include "modules/storage.h"
 #include "modules/rtc.h"

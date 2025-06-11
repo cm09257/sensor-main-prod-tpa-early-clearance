@@ -49,9 +49,9 @@ void increase_time_by_min(uint8_t delta_min, uint8_t curr_h, uint8_t curr_m, uin
 
 void mode_pre_high_temperature_run(void)
 {
-    DebugLn("=== Mode PRE_HIGH_TEMP ===");
+    DebugLn("=============== MODE_PRE_HIGH_TEMP ===============");
 
-    float curr_temp;
+  //  float curr_temp;
 
     // Configuring TMP126 EXTI
     GPIO_Init(TMP126_WAKE_PORT, TMP126_WAKE_PIN, GPIO_MODE_IN_FL_IT);

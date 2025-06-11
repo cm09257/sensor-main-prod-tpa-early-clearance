@@ -10,7 +10,7 @@
 #include "stm8s_gpio.h"
 #include "periphery/hardware_resources.h"
 #include "app/state_machine.h"
-#include "modules/radio.h"
+//#include "modules/radio.h"
 #include "modules/settings.h"
 #include "modules/uplink_builder.h"
 #include "modules/storage.h"
@@ -28,6 +28,12 @@
 #include "modes/mode_wait_for_activation.h"
 #include "modes/mode_high_temperature.h"
 
+mode_t current_mode = MODE_TEST;
+timestamp_t last_measurement_ts = 0;
+bool mode_transition_pending = FALSE;
+mode_t next_mode;
+
+
 mode_t mode_before_halt = MODE_TEST;
 
 // === Initialisierung ===
@@ -40,6 +46,8 @@ mode_t mode_before_halt = MODE_TEST;
  */
 void state_init(void)
 {
+
+    DebugLn("[STATE INIT] Loading persisted mode ...");
     mode_t persisted;
 
     if (load_persisted_mode(&persisted)) // persisted mode stored in eeprom ?
@@ -47,18 +55,18 @@ void state_init(void)
         if (persisted <= MODE_SLEEP)
         {
             current_mode = persisted;
-            DebugUVal("Start in gespeicherten Modus", current_mode, "");
+            DebugUVal("[STATE INIT] Starting in previously saved mode ", current_mode, ".");
         }
         else
         {
             current_mode = MODE_TEST;
-            DebugLn("Persistierter Modus ungueltig, gehe in MODE_TEST");
+            DebugLn("[STATE INIT] Persisted mode invalid. Switching to MODE_TEST.");
         }
     }
     else
     {
         current_mode = MODE_TEST;
-        DebugLn("Kein gespeicherter Modus gefunden, starte im MODE_TEST");
+        DebugLn("[STATE INIT] No persisted mode found. Switching to MODE_TEST.");
     }
 
     last_measurement_ts = 0;

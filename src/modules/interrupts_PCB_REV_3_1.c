@@ -26,7 +26,7 @@ INTERRUPT_HANDLER(EXTI_PORT_D_IRQHandler, PORT_D_INTERRUPT_VECTOR) // RTC_WAKE =
     MCP7940N_ClearAlarmFlagX(0); // in ISR
     MCP7940N_DisableAlarmX(1);   // immediately disable and clear alarms
     MCP7940N_ClearAlarmFlagX(1); // in ISR
-/*
+
     Debug("Wakeup durch Alarm: ");
     if (triggered_0)
         Debug("ALM0 ");

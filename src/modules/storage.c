@@ -391,7 +391,7 @@ void storage_flash_test(void) // external flash
 
     DebugLn("-- Interner Flash --");
     // i = 0
- /*   internal_flash_read_record(0, &rec);
+    internal_flash_read_record(0, &rec);
     DebugUVal("Index ", 0, "");
     DebugUVal("  Timestamp (x5min):", rec.timestamp, "");
     DebugFVal("  Temperatur: ", rec.temperature, "°C");

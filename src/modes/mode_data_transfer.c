@@ -1,13 +1,13 @@
 #include "stm8s.h"
 #include "app/state_machine.h"
 #include "modules/settings.h"
-#include "modules/radio.h"
+//#include "modules/radio.h"
 #include "modules/storage.h"
 #include "modules/rtc.h"
 #include "periphery/mcp7940n.h"
 #include "utility/debug.h"
 
-
+/*
 static bool perform_handshake_and_timesync(void)
 {
     DebugLn("[DT] Sende Data-Ping zur Initialisierung...");
@@ -134,4 +134,9 @@ void mode_data_transfer_run(void)
     DebugLn(success ? "[DT] Alle Datensätze erfolgreich übertragen" : "[DT] Übertragung unvollständig");
     DebugLn("=== MODE_DATA_TRANSFER ENDE ===");
     state_transition(MODE_SLEEP);
+}
+*/
+void mode_data_transfer_run(void)
+{
+    nop();
 }
