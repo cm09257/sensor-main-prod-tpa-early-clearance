@@ -28,42 +28,40 @@ static uint8_t hi_temp_buffer_index = 0;
 void mode_high_temperature_run(void)
 {
     DebugLn("=============== MODE_HIGH_TEMPERATURE START ===============");
+
+    ///////////// For debug purposes: setting cool-down threshold // TODO: Remove for production
     settings_set_cool_down_threshold(21.0f);
 
-    ///// Loading settings
+    ///////////// Loading settings
     float threshold = settings_get()->cool_down_threshold;
     uint8_t interval_min = settings_get()->high_temp_measurement_interval_5min * 5;
-
-    // DebugLn("[MODE_HI_TEMP] Settings loaded");
+    DebugLn("[MODE_HI_TEMP] Settings loaded");
     DebugFVal("[MODE_HI_TEMP] Low temp threshold = ", threshold, "degC");
-    // DebugUVal("[MODE_HI_TEMP] Temperature measurement interval = ", interval_min, "min");
-    // DebugLn("");
-    // DebugLn("[MODE_HI_TEMP] Start measurement of cool-down phase ...");
 
-    ///// Configuring RTC EXTI
+    ///////////// Configuring RTC_WAKE pin for EXTI
     GPIO_Init(RTC_WAKE_PORT, RTC_WAKE_PIN, GPIO_MODE_IN_FL_IT);
     EXTI_SetExtIntSensitivity(RTC_EXTI_PORT, EXTI_SENSITIVITY_FALL_ONLY);
 
-    ///// Main loop
-
+    ///////////// Main loop
+    DebugLn("[MODE_HI_TEMP] Starting data acquisition of cool-down phase ...");
     while (state_get_current() == MODE_HIGH_TEMPERATURE)
     {
-        ///// Measure Temperature
+        ///////////// Measure Temperature
         TMP126_OpenForMeasurement();
         float temp = TMP126_ReadTemperatureCelsius();
         TMP126_CloseForMeasurement();
-        DebugFVal("[MODE_HI_TEMP] Temp readout = : ", temp, "degC");
+        DebugFVal("[MODE_HI_TEMP] Readout  Temp = ", temp, "degC");
 
-        ///// Creating data record
+        ///////////// Creating data record
         record_t rec;
         rec.timestamp = rtc_get_timestamp(); // 5-min Ticks
         rec.temperature = temp;
-        rec.flags = 0x01; // gültiger Messwert
+        rec.flags = 0x01; // 0x01 = valid value, 0x00 =error
                           // DebugUVal("[MODE_HI_TEMP] rec.timestamp   = ", rec.timestamp, "x5 min");
                           //  DebugUVal("[MODE_HI_TEMP] rec.temperature = ", rec.temperature, "degC");
                           // DebugUVal("[MODE_HI_TEMP] rec.flags       = ", rec.flags, "(1 = ok)");
 
-        ///// Store data record in RAM (array)
+        ///////////// Store data record in RAM (array)
         if (hi_temp_buffer_index < HI_TEMP_RAM_BUFFER_SIZE)
         {
             hi_temp_buffer[hi_temp_buffer_index++] = rec;
@@ -73,25 +71,25 @@ void mode_high_temperature_run(void)
             DebugLn("[MODE_HI_TEMP] RAM data buffer full!");
         }
 
-        ///// Development phase: After three measurements --> Copy data and transition to MODE_OPERATIONAL
+        ///////////// Development phase: After three measurements --> Copy data and transition to MODE_OPERATIONAL // TODO: Remove counter
 #if defined(DEBUG_MODE_HI_TEMP)
         dev_hi_temp_counter++;
-        DebugUVal("[DEV] HighTemp Measurement Count: ", dev_hi_temp_counter, "");
+        DebugUVal("[MODE_HI_TEMP] [DEV] HighTemp Measurement Count: ", dev_hi_temp_counter, "");
         if (dev_hi_temp_counter >= DEV_HI_TEMP_SKIP_AFTER)
         {
-            DebugLn("[DEV] Threshold ignored -> Go to Copy & Change Mode");
+            DebugLn("[MODE_HI_TEMP] [DEV] Threshold ignored -> Go to Copy & Change Mode");
             temp = threshold - 1; // Schwellenwert künstlich unterschreiten
         }
 #endif
 
-        ///// Check if temperature is below threshold
+        ///////////// Check if temperature is below threshold
         if (temp < threshold)
         {
-            ///// Copy data from RAM --> Ext. Flash
+            ///////////// Copy data from RAM --> Ext. Flash
             DebugLn("[MODE_HI_TEMP] Temperature below threshold -> Copy data and change mode");
             for (uint8_t i = 0; i < hi_temp_buffer_index; i++)
             {
-                if (!flash_write_record_nolock(&hi_temp_buffer[i]))
+                if (!flash_write_record_nolock(&hi_temp_buffer[i]))  // TODO replace by flash_pageprogram
                 {
                     DebugUVal("[MODE_HI_TEMP] Error writing external flash for record with index ", i, "");
                     break;

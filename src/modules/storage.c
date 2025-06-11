@@ -53,6 +53,7 @@ void storage_eeprom_unlock(void) // internal flash
 
 void storage_write_eeprom(uint16_t address, const uint8_t *data, uint16_t len) // internal flash
 {
+    /*
     // DebugLn("Manual EEPROM Unlock Test");
 
     FLASH->CR2 |= FLASH_CR2_PRG;
@@ -67,13 +68,13 @@ void storage_write_eeprom(uint16_t address, const uint8_t *data, uint16_t len) /
     else
     {
         DebugLn("EEPROM Unlock FEHLGESCHLAGEN!");
-    }
+    }*/
 
     // EEPROM entsperren, falls nicht bereits passiert
     if (!(FLASH->IAPSR & FLASH_IAPSR_DUL))
     {
         FLASH_Unlock(FLASH_MEMTYPE_DATA);
-        //  DebugLn("[EEPROM] Unlock durchgeführt");
+        DebugLn("[EEPROM] Unlock done.");
     }
 
     for (uint16_t i = 0; i < len; ++i)
