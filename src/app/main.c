@@ -78,6 +78,7 @@ void main(void)
         DebugLn("Erasing flash...");
         do_chip_erase = TRUE;
         settings->flags |= SETTINGS_FLAG_FLASH_ERASE_DONE;
+        settings->flash_record_count = 0;
         settings_save();
     }
     else

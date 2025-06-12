@@ -93,6 +93,7 @@ typedef struct {
     uint8_t transfer_mode;                        ///< 0 = alle Daten, 1 = nur neue Datensätze (⚠️ Phase 2)
     uint32_t device_id;                           ///< Eindeutige 32-Bit Geräte-ID
     float cool_down_threshold;                    ///< Temperatur-Schwelle zum Beenden von HIGH_TEMPERATURE
+    uint32_t flash_record_count; ///< Anzahl Datensätze im externen Flash
     uint8_t flags;  ///< z. B. Bit 0 = Flash initialized
 } settings_t;
 

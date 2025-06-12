@@ -40,8 +40,9 @@ void mode_high_temperature_run(void)
     settings_set_cool_down_threshold(21.0f);
 
     ///////////// Loading settings
-    float threshold = settings_get()->cool_down_threshold;
-    uint8_t interval_min = settings_get()->high_temp_measurement_interval_5min * 5;
+    settings_t *settings = settings_get();
+    float threshold = settings->cool_down_threshold;
+    uint8_t interval_min = settings->high_temp_measurement_interval_5min * 5;
     DebugLn("[MODE_HI_TEMP] Settings loaded");
     DebugFVal("[MODE_HI_TEMP] Low temp threshold = ", threshold, "degC");
 
@@ -103,7 +104,7 @@ void mode_high_temperature_run(void)
             for (uint16_t i = 0; i < hi_temp_buffer_index; i++)
             {
                 /// Compute adress in flash, taking page limits into account.
-                address = flash_get_record_address(i);
+                address = flash_get_record_address(settings->flash_record_count + i);
 
                 /// Serialize record
                 uint8_t tmp[sizeof(record_t)];
@@ -123,7 +124,7 @@ void mode_high_temperature_run(void)
             for (uint16_t i = 0; i < hi_temp_buffer_index; i++)
             {
                 record_t rec;
-                uint32_t address = flash_get_record_address(i);
+                uint32_t address = flash_get_record_address(settings->flash_record_count + i);
 
                 uint8_t tmp[sizeof(record_t)];
                 Flash_ReadData(address, tmp, sizeof(record_t));
@@ -141,6 +142,11 @@ void mode_high_temperature_run(void)
             ////////////////////////////// Debug Dump end
 
             DebugLn("[MODE_HI_TEMP] RAM-Data copied to external flash");
+            settings->flash_record_count += hi_temp_buffer_index;
+            settings_save();
+            settings_load();
+            settings = settings_get();
+            DebugUVal("[MODE_HI_TEMP] Updated flash_record_count = ", settings->flash_record_count, "");
 
             state_transition(MODE_OPERATIONAL);
             return;
