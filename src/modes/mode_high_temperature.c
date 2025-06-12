@@ -31,37 +31,6 @@ void mode_high_temperature_run(void)
 {
     DebugLn("=============== MODE_HIGH_TEMPERATURE START ===============");
 
-    uint32_t address = 0x0100;
-    uint8_t test_data[16];
-    uint8_t read_back[16];
-
-    // Füllung: 0x00, 0x01, ..., 0x0F
-    for (uint8_t i = 0; i < 16; i++) {
-        test_data[i] = i;
-    }
-
-    Flash_Open();
-
-    DebugHex16("[FLASH TEST] Writing at:", (uint16_t)address);
-    Flash_PageProgram(address, test_data, sizeof(test_data));
-
-    DebugLn("[FLASH TEST] Reading back...");
-    Flash_ReadData(address, read_back, sizeof(read_back));
-
-    DebugLn("[FLASH TEST] Dump:");
-    for (uint8_t i = 0; i < sizeof(read_back); i++) {
-        char label[24];
-        sprintf(label, "Byte %02u = ", i);
-        DebugHex(label, read_back[i]);
-    }
-
-    Flash_Close();
-
-    while (1) {nop();}
-    
-
-
-
     /// Resetting index
     hi_temp_buffer_index = 0;
     /// Clearing buffer
@@ -140,16 +109,6 @@ void mode_high_temperature_run(void)
                 uint8_t tmp[sizeof(record_t)];
                 memcpy(tmp, &hi_temp_buffer[i], size_record);
 
-                /// Pointer -> current record_t object
-                // const uint8_t *raw = (const uint8_t *)&hi_temp_buffer[i];
-                DebugHex16("[FLASH] Writing at adress ", (uint16_t)address);
-
-                DebugHex16("  address = ", (uint16_t)address);
-                for (uint8_t j = 0; j < sizeof(record_t); j++)
-                {
-                    DebugHex("    byte ", tmp[j]);
-                }
-
                 bool ok = Flash_PageProgram(address, tmp, size_record);
                 if (!ok)
                 {
@@ -169,12 +128,6 @@ void mode_high_temperature_run(void)
                 uint8_t tmp[sizeof(record_t)];
                 Flash_ReadData(address, tmp, sizeof(record_t));
                 memcpy(&rec, tmp, sizeof(record_t));
-                DebugHex("Float Raw[0]: ", tmp[4]);
-                DebugHex("Float Raw[1]: ", tmp[5]);
-                DebugHex("Float Raw[2]: ", tmp[6]);
-                DebugHex("Float Raw[3]: ", tmp[7]);
-
-                DebugFVal("Rec.Temp = ", rec.temperature, " °C");
 
                 // Debug-Ausgabe
                 DebugUVal("[FLASH DUMP] Index     = ", i, "");
