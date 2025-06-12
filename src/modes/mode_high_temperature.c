@@ -15,6 +15,8 @@
 #include "periphery/uart.h"
 #include "periphery/mcp7940n.h"
 #include "periphery/hardware_resources.h"
+#include "periphery/flash.h"
+#include <string.h>
 
 #define DEBUG_MODE_HI_TEMP 1
 #define DEV_HI_TEMP_SKIP_AFTER 3
@@ -28,6 +30,42 @@ static uint8_t hi_temp_buffer_index = 0;
 void mode_high_temperature_run(void)
 {
     DebugLn("=============== MODE_HIGH_TEMPERATURE START ===============");
+
+    uint32_t address = 0x0100;
+    uint8_t test_data[16];
+    uint8_t read_back[16];
+
+    // Füllung: 0x00, 0x01, ..., 0x0F
+    for (uint8_t i = 0; i < 16; i++) {
+        test_data[i] = i;
+    }
+
+    Flash_Open();
+
+    DebugHex16("[FLASH TEST] Writing at:", (uint16_t)address);
+    Flash_PageProgram(address, test_data, sizeof(test_data));
+
+    DebugLn("[FLASH TEST] Reading back...");
+    Flash_ReadData(address, read_back, sizeof(read_back));
+
+    DebugLn("[FLASH TEST] Dump:");
+    for (uint8_t i = 0; i < sizeof(read_back); i++) {
+        char label[24];
+        sprintf(label, "Byte %02u = ", i);
+        DebugHex(label, read_back[i]);
+    }
+
+    Flash_Close();
+
+    while (1) {nop();}
+    
+
+
+
+    /// Resetting index
+    hi_temp_buffer_index = 0;
+    /// Clearing buffer
+    memset(hi_temp_buffer, 0, sizeof(hi_temp_buffer));
 
     ///////////// For debug purposes: setting cool-down threshold // TODO: Remove for production
     settings_set_cool_down_threshold(21.0f);
@@ -87,30 +125,69 @@ void mode_high_temperature_run(void)
         {
             ///////////// Copy data from RAM --> Ext. Flash
             DebugLn("[MODE_HI_TEMP] Temperature below threshold -> Copy data and change mode");
-            for (uint8_t i = 0; i < hi_temp_buffer_index; i++)
+
+            /// Adress in flash, calculation in for loop.
+            uint32_t address;
+            uint8_t size_record = sizeof(record_t);
+
+            Flash_Open();
+            for (uint16_t i = 0; i < hi_temp_buffer_index; i++)
             {
-                if (!flash_write_record_nolock(&hi_temp_buffer[i]))  // TODO replace by flash_pageprogram
+                /// Compute adress in flash, taking page limits into account.
+                address = flash_get_record_address(i);
+
+                /// Serialize record
+                uint8_t tmp[sizeof(record_t)];
+                memcpy(tmp, &hi_temp_buffer[i], size_record);
+
+                /// Pointer -> current record_t object
+                // const uint8_t *raw = (const uint8_t *)&hi_temp_buffer[i];
+                DebugHex16("[FLASH] Writing at adress ", (uint16_t)address);
+
+                DebugHex16("  address = ", (uint16_t)address);
+                for (uint8_t j = 0; j < sizeof(record_t); j++)
                 {
-                    DebugUVal("[MODE_HI_TEMP] Error writing external flash for record with index ", i, "");
+                    DebugHex("    byte ", tmp[j]);
+                }
+
+                bool ok = Flash_PageProgram(address, tmp, size_record);
+                if (!ok)
+                {
+                    DebugUVal("[MODE_HI_TEMP] Flash write failed at index ", i, ".");
                     break;
                 }
             }
+            Flash_Close();
+
+            /// For Debug: Dump data
+            Flash_Open();
+            for (uint16_t i = 0; i < hi_temp_buffer_index; i++)
+            {
+                record_t rec;
+                uint32_t address = flash_get_record_address(i);
+
+                uint8_t tmp[sizeof(record_t)];
+                Flash_ReadData(address, tmp, sizeof(record_t));
+                memcpy(&rec, tmp, sizeof(record_t));
+                DebugHex("Float Raw[0]: ", tmp[4]);
+                DebugHex("Float Raw[1]: ", tmp[5]);
+                DebugHex("Float Raw[2]: ", tmp[6]);
+                DebugHex("Float Raw[3]: ", tmp[7]);
+
+                DebugFVal("Rec.Temp = ", rec.temperature, " °C");
+
+                // Debug-Ausgabe
+                DebugUVal("[FLASH DUMP] Index     = ", i, "");
+                DebugHex16("[FLASH DUMP] Adress    = ", (uint16_t)address);
+                DebugUVal("[FLASH DUMP] Timestamp = ", rec.timestamp, " (x5min)");
+                DebugFVal("[FLASH DUMP] Temp      = ", rec.temperature, "degC");
+                DebugUVal("[FLASH DUMP] Flags     = ", rec.flags, "");
+                DebugLn("--------------------------------------------------");
+            }
+            Flash_Close();
+            ////////////////////////////// Debug Dump end
+
             DebugLn("[MODE_HI_TEMP] RAM-Data copied to external flash");
-            hi_temp_buffer_index = 0;
-
-            // DebugLn("[DEBUG] Lese erste 3 Datensaetze aus externem Flash...");
-
-            record_t rec;
-            flash_read_record(0, &rec);
-            uint16_t ts = rec.timestamp;
-            float tm = rec.temperature;
-            uint8_t fl = rec.flags;
-
-            DebugUVal("record temp = ", (uint8_t)tm, "degC");
-            // DebugLn("Index 0");
-            // DebugUVal("  Timestamp = ", ts, " x5min");
-            // DebugFVal("  Temperature = ", tm, "degC");
-            // DebugUVal("  Flag = ", fl, " (1 = ok)");
 
             state_transition(MODE_OPERATIONAL);
             return;

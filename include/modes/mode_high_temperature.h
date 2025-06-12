@@ -1,6 +1,7 @@
 #ifndef MODE_HIGH_TEMPERATURE_H
 #define MODE_HIGH_TEMPERATURE_H
 
+#define FLASH_BASE_ADRESS 0x000100
 
 // Globales Flag, das vom EXTI gesetzt wird
 extern volatile bool mode_hi_temp_measurement_alert_triggered;

@@ -39,6 +39,7 @@ void settings_set_default(void)
     current_settings.transfer_mode = 0;                       // 0 = alle Daten übertragen
     current_settings.device_id = 0xFFFFFFFF;                  // ungültige ID
     current_settings.cool_down_threshold = DEFAULT_COOL_DOWN_THRESHOLD;
+    current_settings.flags = 0x00;
 
     // DebugUVal("  Intervall: ", current_settings.measurement_interval_5min, " x5min");
     // DebugUVal("  HighTemp-Intervall: ", current_settings.high_temp_measurement_interval_5min, " x5min");

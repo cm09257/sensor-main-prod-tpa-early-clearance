@@ -23,11 +23,11 @@
 #include "periphery/system.h"
 #include "modules/settings.h"
 #include "modules/storage_internal.h"
-//#include "modules/storage.h"
-//#include "modules/rtc.h"
-//#include "modules/interrupts_PCB_REV_3_1.h"
+// #include "modules/storage.h"
+// #include "modules/rtc.h"
+// #include "modules/interrupts_PCB_REV_3_1.h"
 #include "utility/debug.h"
-//#include "utility/debug_menu.h"
+// #include "utility/debug_menu.h"
 #include "utility/delay.h"
 #include "utility/random.h"
 #include "stm8s_clk.h"
@@ -62,14 +62,36 @@ INTERRUPT_HANDLER(EXTI_PORT_C_IRQHandler, 5) // TMP126 ALERT = PE5
  */
 void main(void)
 {
-    system_init(); ///< Systemkomponenten initialisieren
+    system_init_phase_1(); ///< Systemkomponenten initialisieren
+
+    // TODO: For Debug -> remove
+    settings_set_default();
+    settings_save();
+    ///////////////////////////////
+
+    settings_load();
+    settings_t *settings = settings_get();
+  
+    bool do_chip_erase = FALSE;
+    if (!(settings->flags & SETTINGS_FLAG_FLASH_ERASE_DONE))
+    {
+        DebugLn("Erasing flash...");
+        do_chip_erase = TRUE;
+        settings->flags |= SETTINGS_FLAG_FLASH_ERASE_DONE;
+        settings_save();
+    }
+    else
+    {
+        DebugLn("No erase required");
+    }
+    system_init_phase_2(do_chip_erase);
     DebugLn("=============== Sensor Main ===============");
 
     state_init(); ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
                   // DebugMenu_Init(); // Show Debug Menu
 
     // DebugLn("[sensor-main] Going into mode MODE_PRE_HIGH_TEMP");
-    set_mode_debug_only(MODE_PRE_HIGH_TEMP);
+    set_mode_debug_only(MODE_HIGH_TEMPERATURE);
     // DebugLn("[sensor-main] MODE_PRE_HIGH_TEMP set.");
     while (1)
     {

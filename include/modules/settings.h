@@ -78,6 +78,8 @@
 #define RADIO_ACK_CODE  0xAA
 #define RADIO_NACK_CODE 0x55
 
+// === Flags ===
+#define SETTINGS_FLAG_FLASH_ERASE_DONE  (1 << 0)
 
 // === Struktur der Gerätekonfiguration ===
 
@@ -91,6 +93,7 @@ typedef struct {
     uint8_t transfer_mode;                        ///< 0 = alle Daten, 1 = nur neue Datensätze (⚠️ Phase 2)
     uint32_t device_id;                           ///< Eindeutige 32-Bit Geräte-ID
     float cool_down_threshold;                    ///< Temperatur-Schwelle zum Beenden von HIGH_TEMPERATURE
+    uint8_t flags;  ///< z. B. Bit 0 = Flash initialized
 } settings_t;
 
 
