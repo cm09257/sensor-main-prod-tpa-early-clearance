@@ -12,6 +12,7 @@
 #include "app/state_machine.h"
 #include "modes/mode_pre_high_temperature.h"
 #include "modes/mode_high_temperature.h"
+#include "modes/mode_operational.h"
 #include "periphery/tmp126.h"
 #include "periphery/mcp7940n.h"
 #include "periphery/uart.h"
@@ -37,17 +38,22 @@
 
 ////////////////////// Interrupt Service Routine (ISR)
 
-INTERRUPT_HANDLER(EXTI_PORT_D_IRQHandler, 6) // RTC_WAKE = PD2
+INTERRUPT_HANDLER(EXTI_PORT_D_IRQHandler, 6)  ///////////////////// RTC ISR
 {
     DebugUVal("[ISR] Last mode = ", mode_before_halt, "");
+
     if (mode_before_halt == MODE_HIGH_TEMPERATURE)
     {
-        DebugLn("[ISR] Last mode = MODE_HIGH_TEMPERATURE");
-        mode_hi_temp_measurement_alert_triggered = TRUE;
+        DebugLn("[ISR] MODE_HIGH_TEMPERATURE -> Set alert flag");
+        mode_operational_rtc_alert_triggered = TRUE;
+    }
+    else if (mode_before_halt == MODE_OPERATIONAL)    
+    {
+        mode_operational_rtc_alert_triggered = TRUE;
     }
 }
 
-INTERRUPT_HANDLER(EXTI_PORT_C_IRQHandler, 5) // TMP126 ALERT = PE5
+INTERRUPT_HANDLER(EXTI_PORT_C_IRQHandler, 5) ///////////////////// TMP126 ISR
 {
     pre_hi_temp_alert_triggered = TRUE;
 }
@@ -71,7 +77,7 @@ void main(void)
 
     settings_load();
     settings_t *settings = settings_get();
-  
+
     bool do_chip_erase = FALSE;
     if (!(settings->flags & SETTINGS_FLAG_FLASH_ERASE_DONE))
     {

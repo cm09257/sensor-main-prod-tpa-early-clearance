@@ -3,6 +3,8 @@
 
 #include "common/types.h"
 
+extern volatile bool mode_operational_rtc_alert_triggered;
+
 /**
  * @brief Führt den normalen Betriebsmodus aus (MODE_OPERATIONAL).
  *
