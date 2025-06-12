@@ -33,25 +33,22 @@ void settings_set_default(void)
 {
     DebugLn("[settings] Setze Default-Werte...");
 
-    current_settings.measurement_interval_5min = 12;                    ///< Intervall zwischen Messungen (in 5-Min-Schritten)
     current_settings.high_temp_measurement_interval_5min = 2;           ///< Intervall im HIGH_TEMPERATURE-Modus
     current_settings.transfer_mode = 0;                                 ///< 0 = alle Daten, 1 = nur neue Datensätze
     current_settings.flags = 0x00;                                      ///< z. B. Bit 0 = Flash initialized
-    current_settings.flash_record_count = 0;                            ///< Anzahl Datensätze im externen Flash
-    current_settings.send_mode = 1;                                     ///< 0 = periodisch, 1 = feste Uhrzeit
+    current_settings.flash_record_count;                                ///< Anzahl Datensätze im externen Flash
+    current_settings.send_mode = 0;                                     ///< 0 = periodisch, 1 = feste Uhrzeit
     current_settings.send_interval_5min = 12;                           ///< nur bei send_mode=0: Intervall (in 5-min Schritten)
     current_settings.send_fixed_hour = 12;                              ///< nur bei send_mode=1: Stunde (0–23)
     current_settings.send_fixed_minute = 0;                             ///< nur bei send_mode=1: Minute (0–59)
+    current_settings.meas_mode = 0;                                     ///< 0 = periodisch, 1 = feste Uhrzeit
+    current_settings.meas_interval_5min = 2;                            ///< nur bei meas_mode=0: Intervall (in 5-min Schritten)
+    current_settings.meas_fixed_hour = 10;                              ///< nur bei meas_mode=1: Stunde (0–23)
+    current_settings.meas_fixed_minute = 0;                             ///< nur bei meas_mode=1: Minute (0–59)
     current_settings.cool_down_threshold = DEFAULT_COOL_DOWN_THRESHOLD; ///< Temperatur-Schwelle
     current_settings.device_id = 0xFFFFFFFFF;                           ///< Eindeutige ID
-
-    // DebugUVal("  Intervall: ", current_settings.measurement_interval_5min, " x5min");
-    // DebugUVal("  HighTemp-Intervall: ", current_settings.high_temp_measurement_interval_5min, " x5min");
-    // DebugUVal("  Funk-Intervall-Faktor: ", current_settings.send_interval_factor, "");
-    // DebugUVal("  Device ID: ", current_settings.device_id, "");
-    // DebugIVal("  CoolDown-Schwelle: ", (int)(current_settings.cool_down_threshold * 10), " x0.1°C");
+    current_settings.flash_record_count = 0;
 }
-
 void settings_load(void)
 {
     uint8_t raw[sizeof(settings_t)];
@@ -66,8 +63,15 @@ void settings_load(void)
     {
         memcpy(&current_settings, raw, sizeof(settings_t));
 
-        if (current_settings.measurement_interval_5min == 0 ||
-            current_settings.send_interval_5min == 0 ||
+        // Plausibilitätscheck für neue Felder
+        if (current_settings.meas_mode > 1 ||
+            current_settings.send_mode > 1 ||
+            (current_settings.meas_mode == 0 && current_settings.meas_interval_5min == 0) ||
+            (current_settings.send_mode == 0 && current_settings.send_interval_5min == 0) ||
+            current_settings.send_fixed_hour > 23 ||
+            current_settings.send_fixed_minute > 59 ||
+            current_settings.meas_fixed_hour > 23 ||
+            current_settings.meas_fixed_minute > 59 ||
             current_settings.high_temp_measurement_interval_5min == 0)
         {
             settings_set_default();
@@ -80,7 +84,6 @@ void settings_load(void)
         settings_save();
     }
 }
-
 
 void settings_set_cool_down_threshold(float threshold)
 {

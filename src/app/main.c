@@ -98,7 +98,7 @@ void main(void)
                   // DebugMenu_Init(); // Show Debug Menu
 
     // DebugLn("[sensor-main] Going into mode MODE_PRE_HIGH_TEMP");
-    set_mode_debug_only(MODE_HIGH_TEMPERATURE);
+    set_mode_debug_only(MODE_OPERATIONAL);
     // DebugLn("[sensor-main] MODE_PRE_HIGH_TEMP set.");
     while (1)
     {

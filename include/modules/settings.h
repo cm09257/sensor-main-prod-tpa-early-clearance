@@ -80,8 +80,7 @@
  * @brief Persistente Geräteeinstellungen, gespeichert im EEPROM
  */
 typedef struct
-{
-    uint8_t measurement_interval_5min;           ///< Intervall zwischen Messungen (in 5-Min-Schritten)
+{ 
     uint8_t high_temp_measurement_interval_5min; ///< Intervall im HIGH_TEMPERATURE-Modus
     uint8_t transfer_mode;                       ///< 0 = alle Daten, 1 = nur neue Datensätze
     uint8_t flags;                               ///< z. B. Bit 0 = Flash initialized
@@ -90,6 +89,10 @@ typedef struct
     uint8_t send_interval_5min;                  ///< nur bei send_mode=0: Intervall (in 5-min Schritten)
     uint8_t send_fixed_hour;                     ///< nur bei send_mode=1: Stunde (0–23)
     uint8_t send_fixed_minute;                   ///< nur bei send_mode=1: Minute (0–59)
+    uint8_t meas_mode;                           ///< 0 = periodisch, 1 = feste Uhrzeit
+    uint8_t meas_interval_5min;                  ///< nur bei meas_mode=0: Intervall (in 5-min Schritten)
+    uint8_t meas_fixed_hour;                     ///< nur bei meas_mode=1: Stunde (0–23)
+    uint8_t meas_fixed_minute;                   ///< nur bei meas_mode=1: Minute (0–59)
     float cool_down_threshold;                   ///< Temperatur-Schwelle
     uint32_t device_id;                          ///< Eindeutige ID
 } settings_t;
