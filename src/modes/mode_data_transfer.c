@@ -178,8 +178,9 @@ bool radio_send_ping_packet(uint8_t ping_type)
 
     RFM69_open();
     RFM69_SetModeTx();
+    delay(5000);
     bool ok = RFM69_Send(ping_packet, sizeof(ping_packet), RADIO_TX_TIMEOUT_MS);
-    RFM69_SetModeRx();
+    RFM69_SetModeStandby();
     RFM69_close();
 
     if (!ok)
@@ -319,12 +320,11 @@ void mode_data_transfer_run(void)
     DebugUVal("[DATA_TRANSFER] Number of flash records: ", number_of_records, "");
 
     ///////////// Open RFM
-    RFM69_open();
 
     ///////////// Handshake and Time Sync
     bool ok = FALSE;
     uint8_t count = 0;
-    while (count < 5)
+    while (count < 5000)
     {
         DebugLn("[DATA_TRANSFER] Sending data ping for initialization...");
         ok = radio_send_ping_packet(RADIO_PING_HEADER_DATA_TRANSFER);        
