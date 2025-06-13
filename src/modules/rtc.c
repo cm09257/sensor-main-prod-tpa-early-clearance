@@ -6,19 +6,21 @@
 #include "utility/delay.h"
 #include "periphery/hardware_resources.h"
 
+/*
 static void rtc_enable_exti(void)
 {
     DebugLn("[RTC] EXTI Init (GPIOA, Pin 1)");
     EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOA, EXTI_SENSITIVITY_FALL_LOW);
     GPIO_Init(RTC_WAKE_PORT, RTC_WAKE_PIN, GPIO_MODE_IN_FL_IT);
-}
+}*/
 
+/*
 void rtc_init(void)
 {
     DebugLn("[RTC] Initialisiere MCP7940N...");
     MCP7940N_Init();
     rtc_enable_exti();
-}
+}*/
 
 void rtc_format_time(char *buf, uint8_t h, uint8_t m, uint8_t s)
 {
@@ -38,10 +40,13 @@ void rtc_format_time(char *buf, uint8_t h, uint8_t m, uint8_t s)
 void rtc_get_format_time(char *buf)
 {
     uint8_t h, m, s;
-    rtc_get_time(&h, &m, &s);
+    MCP7940N_Open();
+    MCP7940N_GetTime(&h, &m, &s);
+    MCP7940N_Close();
     rtc_format_time(buf, h, m, s);
 }
 
+/*
 void rtc_get_time(uint8_t *hour, uint8_t *minute, uint8_t *second)
 {
     //    DebugLn("In rtc_get_time");
@@ -56,8 +61,9 @@ void rtc_get_time(uint8_t *hour, uint8_t *minute, uint8_t *second)
     // DebugLn("rtc_get_time open done");
 
     //  DebugLn("Leaving rtc_get_time");
-}
+}*/
 
+/*
 void rtc_clear_and_disable_alarm(uint8_t alarm)
 {
     MCP7940N_Open();
@@ -68,12 +74,15 @@ void rtc_clear_and_disable_alarm(uint8_t alarm)
     delay(5);
     MCP7940N_Close();
     delay(5);
-}
+}*/
 
 timestamp_t rtc_get_timestamp(void)
 {
     uint8_t h, m, s;
-    rtc_get_time(&h, &m, &s);
+    MCP7940N_Open();
+    MCP7940N_GetTime(&h, &m, &s);
+    MCP7940N_Close();
+    
     uint32_t ts = ((uint32_t)h * 60 + m) / 5;
 
     // Debug("[RTC] Timestamp (5-min): ");
@@ -84,6 +93,7 @@ timestamp_t rtc_get_timestamp(void)
     return ts;
 }
 
+/*
 void rtc_set_alarm(rtc_alarm_t alarm, uint8_t hour, uint8_t minute, uint8_t second)
 {
     // DebugUVal("[RTC] Setze Alarm", alarm, "");
@@ -97,12 +107,14 @@ void rtc_set_alarm(rtc_alarm_t alarm, uint8_t hour, uint8_t minute, uint8_t seco
     delay(5);
     MCP7940N_Close();
     delay(5);
-}
+}*/
 
 void rtc_set_alarm_in_minutes(rtc_alarm_t alarm, uint8_t delta_min)
 {
     uint8_t h, m, s;
-    rtc_get_time(&h, &m, &s);
+    MCP7940N_Open();
+    MCP7940N_GetTime(&h, &m, &s);
+    MCP7940N_Close();
 
     uint8_t new_m = (m + delta_min) % 60;
     uint8_t new_h = (h + (m + delta_min) / 60) % 24;
@@ -113,9 +125,15 @@ void rtc_set_alarm_in_minutes(rtc_alarm_t alarm, uint8_t delta_min)
     DebugLn(buf);
     // DebugUVal("Alarm m = ", new_m, "");
     // DebugUVal("Alarm s", s, "");
-    rtc_set_alarm(alarm, new_h, new_m, s);
+    MCP7940N_Open();
+    delay(5);
+    MCP7940N_ConfigureAbsoluteAlarmX(alarm, new_h, new_m, s);
+    //   DebugLn("Configured abs alarm");
+    delay(5);
+    MCP7940N_Close();
 }
 
+/*
 void rtc_set_alarm_offset(rtc_alarm_t alarm, uint8_t offset_minutes, uint8_t offset_seconds)
 {
     Debug("[RTC] Alarm-Offset: ");
@@ -147,9 +165,9 @@ void rtc_set_alarm_offset(rtc_alarm_t alarm, uint8_t offset_minutes, uint8_t off
     delay(5);
     MCP7940N_Close();
     delay(5);
-}
+}*/
 
-void rtc_clear_alarm(rtc_alarm_t alarm)
+/*void rtc_clear_alarm(rtc_alarm_t alarm)
 {
     DebugUVal("[RTC] Lösche Alarm", alarm, "");
     MCP7940N_Open();
@@ -160,9 +178,9 @@ void rtc_clear_alarm(rtc_alarm_t alarm)
     delay(5);
     MCP7940N_Close();
     delay(5);
-}
+}*/
 
-uint8_t rtc_was_alarm_triggered(rtc_alarm_t alarm)
+/*uint8_t rtc_was_alarm_triggered(rtc_alarm_t alarm)
 {
     MCP7940N_Open();
     delay(5);
@@ -176,10 +194,10 @@ uint8_t rtc_was_alarm_triggered(rtc_alarm_t alarm)
     delay(5);
 
     return result;
-}
+}*/
 
 // ────── Nur ALARM 0 für wiederkehrende Zeitfenster ──────
-static void rtc_set_alarm_periodic(uint8_t interval_min)
+/*static void rtc_set_alarm_periodic(uint8_t interval_min)
 {
     uint8_t h, m, s;
     rtc_get_time(&h, &m, &s);
@@ -190,13 +208,15 @@ static void rtc_set_alarm_periodic(uint8_t interval_min)
 
     DebugUVal("[RTC] Setze Periodic-Alarm (min)", interval_min, "");
     rtc_set_alarm(RTC_ALARM_0, h, next_min, 0);
-}
+}*/
 
+/*
 void rtc_set_periodic_alarm_5min(void) { rtc_set_alarm_periodic(5); }
 void rtc_set_periodic_alarm_10min(void) { rtc_set_alarm_periodic(10); }
 void rtc_set_periodic_alarm_15min(void) { rtc_set_alarm_periodic(15); }
 void rtc_set_periodic_alarm_30min(void) { rtc_set_alarm_periodic(30); }
 void rtc_set_periodic_alarm_hourly(void) { rtc_set_alarm_periodic(60); }
+*/
 
 void rtc_set_unix_timestamp(uint32_t unix_time)
 {
@@ -205,6 +225,11 @@ void rtc_set_unix_timestamp(uint32_t unix_time)
     uint8_t hours = (total_seconds / 3600) % 24;
     uint8_t minutes = (total_seconds / 60) % 60;
     uint8_t seconds = total_seconds % 60;
+
+    char buf[64];
+    Debug("[RTC.c] New time set via UNIX timestamp = ");
+    rtc_format_time(buf, hours, minutes, seconds);
+    DebugLn(buf);
 
     delay(5);
     MCP7940N_Open();

@@ -174,7 +174,14 @@ void mode_high_temperature_run(void)
         __asm__("halt");
 
         ///// After HALT: RTC-Interrupt was triggered
-        rtc_clear_and_disable_alarm(RTC_ALARM_1);
+        MCP7940N_Open();
+        delay(5);
+        MCP7940N_DisableAlarmX(RTC_ALARM_1); // immediately disable and clear alarm
+        delay(5);
+        MCP7940N_ClearAlarmFlagX(RTC_ALARM_1); // in ISR
+        delay(5);
+        MCP7940N_Close();
+        delay(5);
 
         //  DebugLn("[MODE_HI_TEMP] Restarting main loop");
         mode_hi_temp_measurement_alert_triggered = FALSE;

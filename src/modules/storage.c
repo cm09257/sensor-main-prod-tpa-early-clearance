@@ -127,7 +127,7 @@ bool load_persisted_mode(mode_t *out_mode) // internal flash
     return FALSE;
 }
 
-bool load_device_id(uint8_t *out) // internal flash
+/*bool load_device_id(uint8_t *out) // internal flash
 {
     uint8_t buf[DEVICE_ID_TOTAL_SIZE];
     if (!storage_read_eeprom(EEPROM_ADDR_DEVICE_ID, buf, DEVICE_ID_TOTAL_SIZE))
@@ -143,9 +143,9 @@ bool load_device_id(uint8_t *out) // internal flash
     memcpy(out, &buf[1], DEVICE_ID_LENGTH);
     DebugLn("[storage] Geräte-ID geladen");
     return TRUE;
-}
+}*/
 
-bool store_device_id(const uint8_t *id) // internal flash
+/*bool store_device_id(const uint8_t *id) // internal flash
 {
     uint8_t check[1];
     if (!storage_read_eeprom(EEPROM_ADDR_DEVICE_ID, check, 1))
@@ -164,7 +164,7 @@ bool store_device_id(const uint8_t *id) // internal flash
     storage_write_eeprom(EEPROM_ADDR_DEVICE_ID, buf, DEVICE_ID_TOTAL_SIZE);
     DebugLn("[storage] Neue Geräte-ID gespeichert");
     return TRUE;
-}
+}*/
 
 //////// External Flash
 
@@ -206,7 +206,7 @@ bool flash_write_record(const record_t *rec) // external flash
 
     return ok;
 }
-
+/*
 bool flash_read_record(uint16_t index, record_t *out) // external flash
 {
     if (!out || index >= MAX_RECORDS)
@@ -231,13 +231,13 @@ bool flash_read_record(uint16_t index, record_t *out) // external flash
      Flash_ReadData(addr, raw, RECORD_SIZE_BYTES);
 
     Flash_Close();
-/*
-    if (!ok)
-    {
-        DebugLn("[flash] Read fail");
-        // DebugUVal("[flash] Rad fail at index ", index, "");
-        return FALSE;
-    }*/
+
+  //  if (!ok)
+  //  {
+   //     DebugLn("[flash] Read fail");
+//        // DebugUVal("[flash] Rad fail at index ", index, "");
+//        return FALSE;
+ //   }
 
     uint32_t ts = ((uint32_t)(raw[2] >> 4) << 16) | ((uint16_t)raw[1] << 8) | raw[0];
     uint8_t crc4 = raw[2] & 0x0F;
@@ -260,13 +260,13 @@ bool flash_read_record(uint16_t index, record_t *out) // external flash
     ///  DebugUVal("          Flags", out->flags, "");
 
     return TRUE;
-}
-
+}*/
+/*
 uint16_t flash_get_count(void) // external flash
 {
     return (uint16_t)(write_ptr / RECORD_SIZE_BYTES);
-}
-
+}*/
+/*
 bool flash_write_record_nolock(const record_t *rec) // external flash
 {
     DebugLn("[flash_write_record_nolock]");
@@ -301,8 +301,8 @@ bool flash_write_record_nolock(const record_t *rec) // external flash
     delay(5);
 
     return TRUE;
-}
-
+}*/
+/*
 void storage_flash_test(void) // external flash
 {
     DebugLn("=== [Flat Flash Test: storage.c] ===");
@@ -352,14 +352,14 @@ void storage_flash_test(void) // external flash
 
 
     Flash_ReadData(test_addr, read_buf, test_len);
-/*
-    if (!Flash_ReadData(test_addr, read_buf, test_len))
-    {
-        DebugLn("[storage_flat] Lesen fehlgeschlagen");
-        Flash_Close();
-        return;
-    }
-*/
+
+ //   if (!Flash_ReadData(test_addr, read_buf, test_len))
+ //   {
+ //       DebugLn("[storage_flat] Lesen fehlgeschlagen");
+  //      Flash_Close();
+  //      return;
+  //  }
+
     Flash_Close();
 
     // 5. Validieren
@@ -382,7 +382,7 @@ void storage_flash_test(void) // external flash
         DebugLn("[PASS] Flash-Test erfolgreich");
     else
         DebugLn("[FAIL] Flash-Daten stimmen nicht überein");
-}
+}*/
 
 /*void storage_debug_dump_records(void)
 {

@@ -12,7 +12,7 @@
 #include "app/state_machine.h"
 //#include "modules/radio.h"
 #include "modules/settings.h"
-#include "modules/uplink_builder.h"
+//#include "modules/uplink_builder.h"
 #include "modules/storage.h"
 #include "config/config.h"
 #include "utility/delay.h"

@@ -67,7 +67,7 @@ bool load_device_id(uint8_t* out);
  * @param id Zeiger auf die 4-Byte-ID
  * @return TRUE bei Erfolg, FALSE wenn ID schon gesetzt oder Fehler
  */
-bool store_device_id(const uint8_t* id);
+//bool store_device_id(const uint8_t* id);
 
 // -----------------------------------------------------------------------------
 // Externer Flash-Datenspeicher
@@ -92,7 +92,7 @@ bool flash_read_record(uint16_t index, record_t* out);
  * @brief Gibt die Anzahl aktuell gespeicherter Datensätze im Flash zurück.
  * @return Anzahl gültiger Datensätze
  */
-uint16_t flash_get_count(void);
+//uint16_t flash_get_count(void);
 
 // -----------------------------------------------------------------------------
 // Interner Pufferspeicher (z. B. bei Stromausfall oder High-Temp)
@@ -105,8 +105,8 @@ uint16_t flash_get_count(void);
  */
 // bool copy_internal_to_external_flash(void);
 
-bool flash_write_record_nolock(const record_t *rec);
+//bool flash_write_record_nolock(const record_t *rec);
 
 //void storage_debug_dump_records(void);
-void storage_flash_test(void);
+// void storage_flash_test(void);
 #endif // STORAGE_H
