@@ -20,8 +20,7 @@
 #define FLAG_SENSOR_ERR 0x02
 
 #define DEV_MODE_OPERATIONAL_TESTING 1
-
-
+#define RADIO_PRIORITY_TOLERANCE_SEC 50
 
 typedef enum
 {
@@ -65,6 +64,13 @@ static uint32_t calc_next_alarm_sec(const alarm_t *alarm, uint32_t now_sec)
     else
     {
         uint16_t interval_sec = alarm->alarm_interval_5_min * 5 * 60;
+
+#if defined(DEV_MODE_OPERATIONAL_TESTING)
+        DebugUVal("[DEBUG] Shortened seconds to next alarm from ", interval_sec, "sec");
+        interval_sec = interval_sec / 10;
+        DebugUVal("[DEBUG] to ", interval_sec, "sec.");
+#endif
+
         uint32_t next = ((now_sec / interval_sec) + 1) * interval_sec;
         return next;
     }
@@ -77,18 +83,41 @@ void calculate_next_alarm(
 {
     // Zeit in Sekunden seit Mitternacht
     uint32_t now_sec = curr_h * 3600UL + curr_m * 60UL + curr_s;
+    DebugUVal("[Debug] Now sec = ", now_sec, "sec");
 
     uint32_t radio_sec = calc_next_alarm_sec(&radio_alarm, now_sec);
     uint32_t temp_sec = calc_next_alarm_sec(&measure_temp_alarm, now_sec);
+    DebugUVal("[DEBUG] Radio alarm in ", (uint16_t)radio_sec, "sec");
+    DebugUVal("[DEBUG] Temp alarm in ", (uint16_t)temp_sec, "sec");
 
-    // Frühesten wählen
-    uint32_t chosen = (temp_sec <= radio_sec) ? temp_sec : radio_sec;
-    *next_alarm_type = (temp_sec <= radio_sec) ? NEXT_ALARM_TEMP : NEXT_ALARM_RADIO;
+    uint32_t chosen;
+    if (radio_sec <= temp_sec)
+    {
+        // Radio sowieso früher: Radio gewinnt
+        chosen = radio_sec;
+        *next_alarm_type = NEXT_ALARM_RADIO;
+    }
+    else if ((radio_sec - temp_sec) <= RADIO_PRIORITY_TOLERANCE_SEC)
+    {
+        // Radio kommt knapp später: trotzdem Radio bevorzugen
+        chosen = radio_sec;
+        *next_alarm_type = NEXT_ALARM_RADIO;
+    }
+    else
+    {
+        // Temperatur deutlich früher: Temperatur gewinnt
+        chosen = temp_sec;
+        *next_alarm_type = NEXT_ALARM_TEMP;
+    }
 
     // Sekunden in h:m:s umrechnen
     *next_h = (chosen / 3600UL) % 24;
     *next_m = (chosen % 3600UL) / 60UL;
     *next_s = chosen % 60UL;
+
+    DebugUVal("Next_h = ", *next_h, "h");
+    DebugUVal("Next_m = ", *next_m, "m");
+    DebugUVal("Next_s = ", *next_s, "s");
 }
 
 void mode_operational_run(void)
