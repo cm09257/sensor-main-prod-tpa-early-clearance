@@ -1,6 +1,7 @@
 #include "modules/storage.h"
-#include "modules/storage_internal.h"
-#include "common/types.h"
+#include "modules/settings.h"
+// #include "modules/storage_internal.h"
+#include "types.h"
 #include "periphery/flash.h"
 #include "utility/debug.h"
 #include "utility/delay.h"
@@ -47,7 +48,9 @@ static uint8_t crc4_timestamp(uint32_t ts_5min)
 
 void storage_eeprom_unlock(void) // internal flash
 {
+#if defined(DEBUG_STORAGE_C)
     DebugLn("[storage] EEPROM entsperrt");
+#endif
     FLASH_Unlock(FLASH_MEMTYPE_DATA);
 }
 
@@ -74,15 +77,19 @@ void storage_write_eeprom(uint16_t address, const uint8_t *data, uint16_t len) /
     if (!(FLASH->IAPSR & FLASH_IAPSR_DUL))
     {
         FLASH_Unlock(FLASH_MEMTYPE_DATA);
+#if defined(DEBUG_STORAGE_C)
         DebugLn("[EEPROM] Unlock done.");
+#endif
     }
 
     for (uint16_t i = 0; i < len; ++i)
     {
         uint32_t target = FLASH_DATA_START_PHYSICAL_ADDRESS + address + i;
-        if (target > (FLASH_DATA_START_PHYSICAL_ADDRESS + 0x3FF))
+        if (target > (FLASH_DATA_END_PHYSICAL_ADDRESS))
         {
+#if defined(DEBUG_STORAGE_C)
             DebugLn("[EEPROM] Schreibversuch außerhalb gültiger Adresse!");
+#endif
             break;
         }
 
@@ -123,7 +130,9 @@ bool load_persisted_mode(mode_t *out_mode) // internal flash
         //  DebugUVal("[storage] Geladener Modus:", value, "");
         return TRUE;
     }
+#if defined(DEBUG_STORAGE_C)
     DebugLn("[storage] CRC Fehler beim Laden des Modus");
+#endif
     return FALSE;
 }
 

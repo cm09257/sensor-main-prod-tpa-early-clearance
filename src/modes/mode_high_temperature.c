@@ -3,7 +3,7 @@
 #include "stm8s_exti.h"
 #include "stm8s_gpio.h"
 #include "modes/mode_high_temperature.h"
-#include "modules/storage_internal.h"
+// #include "modules/storage_internal.h"
 #include "utility/debug.h"
 #include "utility/delay.h"
 #include "app/state_machine.h"
@@ -18,7 +18,6 @@
 #include "periphery/flash.h"
 #include <string.h>
 
-#define DEBUG_MODE_HI_TEMP 1
 #define DEV_HI_TEMP_SKIP_AFTER 3
 #define HI_TEMP_RAM_BUFFER_SIZE 72
 
@@ -29,7 +28,9 @@ static uint8_t hi_temp_buffer_index = 0;
 
 void mode_high_temperature_run(void)
 {
-    DebugLn("=============== MODE_HIGH_TEMPERATURE START ===============");
+#if defined(DEBUG_MODE_HI_TEMP)
+    DebugLn("=============== MODE_IGH_TEMPERATURE START ===============");
+#endif
 
     /// Resetting index
     hi_temp_buffer_index = 0;
@@ -43,22 +44,28 @@ void mode_high_temperature_run(void)
     settings_t *settings = settings_get();
     float threshold = settings->cool_down_threshold;
     uint8_t interval_min = settings->high_temp_measurement_interval_5min * 5;
+#if defined(DEBUG_MODE_HI_TEMP)
     DebugLn("[MODE_HI_TEMP] Settings loaded");
     DebugFVal("[MODE_HI_TEMP] Low temp threshold = ", threshold, "degC");
+#endif
 
     ///////////// Configuring RTC_WAKE pin for EXTI
     GPIO_Init(RTC_WAKE_PORT, RTC_WAKE_PIN, GPIO_MODE_IN_FL_IT);
     EXTI_SetExtIntSensitivity(RTC_EXTI_PORT, EXTI_SENSITIVITY_FALL_ONLY);
 
-    ///////////// Main loop
+///////////// Main loop
+#if defined(DEBUG_MODE_HI_TEMP)
     DebugLn("[MODE_HI_TEMP] Starting data acquisition of cool-down phase ...");
+#endif
     while (state_get_current() == MODE_HIGH_TEMPERATURE)
     {
         ///////////// Measure Temperature
         TMP126_OpenForMeasurement();
         float temp = TMP126_ReadTemperatureCelsius();
         TMP126_CloseForMeasurement();
+#if defined(DEBUG_MODE_HI_TEMP)
         DebugFVal("[MODE_HI_TEMP] Readout  Temp = ", temp, "degC");
+#endif
 
         ///////////// Creating data record
         record_t rec;
@@ -76,7 +83,10 @@ void mode_high_temperature_run(void)
         }
         else
         {
+#if defined(DEBUG_MODE_HI_TEMP)
             DebugLn("[MODE_HI_TEMP] RAM data buffer full!");
+#endif
+            nop();
         }
 
         ///////////// Development phase: After three measurements --> Copy data and transition to MODE_OPERATIONAL // TODO: Remove counter
@@ -93,8 +103,10 @@ void mode_high_temperature_run(void)
         ///////////// Check if temperature is below threshold
         if (temp < threshold)
         {
-            ///////////// Copy data from RAM --> Ext. Flash
+///////////// Copy data from RAM --> Ext. Flash
+#if defined(DEBUG_MODE_HI_TEMP)
             DebugLn("[MODE_HI_TEMP] Temperature below threshold -> Copy data and change mode");
+#endif
 
             /// Adress in flash, calculation in for loop.
             uint32_t address;
@@ -113,7 +125,9 @@ void mode_high_temperature_run(void)
                 bool ok = Flash_PageProgram(address, tmp, size_record);
                 if (!ok)
                 {
+#if defined(DEBUG_MODE_HI_TEMP)
                     DebugUVal("[MODE_HI_TEMP] Flash write failed at index ", i, ".");
+#endif
                     break;
                 }
             }
@@ -130,24 +144,28 @@ void mode_high_temperature_run(void)
                 Flash_ReadData(address, tmp, sizeof(record_t));
                 memcpy(&rec, tmp, sizeof(record_t));
 
-                // Debug-Ausgabe
+// Debug-Ausgabe
+#if defined(DEBUG_MODE_HI_TEMP)
                 DebugUVal("[FLASH DUMP] Index     = ", i, "");
                 DebugHex16("[FLASH DUMP] Adress    = ", (uint16_t)address);
                 DebugUVal("[FLASH DUMP] Timestamp = ", rec.timestamp, " (x5min)");
                 DebugFVal("[FLASH DUMP] Temp      = ", rec.temperature, "degC");
                 DebugUVal("[FLASH DUMP] Flags     = ", rec.flags, "");
                 DebugLn("--------------------------------------------------");
+#endif
             }
             Flash_Close();
             ////////////////////////////// Debug Dump end
-
+#if defined(DEBUG_MODE_HI_TEMP)
             DebugLn("[MODE_HI_TEMP] RAM-Data copied to external flash");
+#endif
             settings->flash_record_count += hi_temp_buffer_index;
             settings_save();
             settings_load();
             settings = settings_get();
+#if defined(DEBUG_MODE_HI_TEMP)
             DebugUVal("[MODE_HI_TEMP] Updated flash_record_count = ", settings->flash_record_count, "");
-
+#endif
             state_transition(MODE_OPERATIONAL);
             return;
         }
@@ -161,13 +179,17 @@ void mode_high_temperature_run(void)
         rtc_set_alarm_in_minutes(RTC_ALARM_1, 1);
         delay(1000);
 #else
+#if defined(DEBUG_MODE_HI_TEMP)
         DebugUVal("[MODE_HI_TEMP] Next Wakeup in ", interval_min, " Minuten");
+#endif
         rtc_set_alarm_in_minutes(RTC_ALARM_1, interval_min);
 #endif
         mode_before_halt = MODE_HIGH_TEMPERATURE;
 
-        ///// Go to power_halt mode, wakeup using RTC EXTI
+///// Go to power_halt mode, wakeup using RTC EXTI
+#if defined(DEBUG_MODE_HI_TEMP)
         DebugLn("[MODE_HI_TEMP] HALT until next RTC-Alarm");
+#endif
         power_enter_halt();
         delay(100);
         enableInterrupts();

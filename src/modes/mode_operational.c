@@ -1,7 +1,7 @@
 #include "stm8s_gpio.h"
 #include "stm8s_exti.h"
 #include "app/state_machine.h"
-#include "common/types.h"
+#include "types.h"
 #include "modes/mode_operational.h"
 // #include "modules/radio.h"
 #include "modules/settings.h"
@@ -15,11 +15,12 @@
 #include "utility/delay.h"
 #include <string.h>
 
+#define DEV_MODE_OPERATIONAL_TESTING 1
+
 // Optional: Definition der Flags für record_t.flags
 #define FLAG_NONE 0x00
 #define FLAG_SENSOR_ERR 0x02
 
-#define DEV_MODE_OPERATIONAL_TESTING 1
 #define RADIO_PRIORITY_TOLERANCE_SEC 50
 
 typedef enum
@@ -83,12 +84,16 @@ void calculate_next_alarm(
 {
     // Zeit in Sekunden seit Mitternacht
     uint32_t now_sec = curr_h * 3600UL + curr_m * 60UL + curr_s;
+#if defined(DEBUG_MODE_OPERATIONAL)
     DebugUVal("[Debug] Now sec = ", now_sec, "sec");
+#endif
 
     uint32_t radio_sec = calc_next_alarm_sec(&radio_alarm, now_sec);
     uint32_t temp_sec = calc_next_alarm_sec(&measure_temp_alarm, now_sec);
+#if defined(DEBUG_MODE_OPERATIONAL)
     DebugUVal("[DEBUG] Radio alarm in ", (uint16_t)radio_sec, "sec");
     DebugUVal("[DEBUG] Temp alarm in ", (uint16_t)temp_sec, "sec");
+#endif
 
     uint32_t chosen;
     if (radio_sec <= temp_sec)
@@ -114,16 +119,18 @@ void calculate_next_alarm(
     *next_h = (chosen / 3600UL) % 24;
     *next_m = (chosen % 3600UL) / 60UL;
     *next_s = chosen % 60UL;
-
+#if defined(DEBUG_MODE_OPERATIONAL)
     DebugUVal("Next_h = ", *next_h, "h");
     DebugUVal("Next_m = ", *next_m, "m");
     DebugUVal("Next_s = ", *next_s, "s");
+#endif
 }
 
 void mode_operational_run(void)
 {
+#if defined(DEBUG_MODE_OPERATIONAL)
     DebugLn("=============== MODE_OPERATIONAL START ===============");
-
+#endif
     settings_t *settings = settings_get();
 
     ///////////// Setting alarm config for radio
@@ -157,16 +164,20 @@ void mode_operational_run(void)
 
     if (temp_c < -100.0f || temp_c > 200.0f)
     {
+#if defined(DEBUG_MODE_OPERATIONAL)
         DebugLn("[MODE_OPERATIONAL] Sensor fail or invalid measurement.");
+#endif
         return;
     }
-
+#if defined(DEBUG_MODE_OPERATIONAL)
     DebugFVal("[MODE_OPERATIONAL] Measured temperature: ", temp_c, "degC");
+#endif
 
     ///////////// Get timestamp from RTC
     timestamp_t ts = rtc_get_timestamp();
+#if defined(DEBUG_MODE_OPERATIONAL)
     DebugUVal("[OPERATIONAL] Timestamp = ", (uint16_t)ts, "*5min");
-
+#endif
     ///////////// Create data record
     record_t rec;
     rec.timestamp = ts;
@@ -183,6 +194,7 @@ void mode_operational_run(void)
     Flash_Open();
     bool ok = Flash_PageProgram(address, tmp, sizeof(record_t));
     Flash_Close();
+#if defined(DEBUG_MODE_OPERATIONAL)
     if (!ok)
     {
         DebugLn("[OPERATIONAL] Failed writing into external flash.");
@@ -191,13 +203,15 @@ void mode_operational_run(void)
     {
         DebugLn("[OPERATIONAL] Record successfully written to external flash.");
     }
+#endif
 
     ///////////// Increment flash counter in settings (EEPROM)
     settings->flash_record_count++;
     settings_save();
     settings_load(); // optional, wenn Konsistenz direkt benötigt
+#if defined(DEBUG_MODE_OPERATIONAL)
     DebugUVal("[OPERATIONAL] Updated flash_record_count = ", settings->flash_record_count, ".");
-
+#endif
     ///////////// Determine next alarm type and time
     uint8_t curr_h, curr_m, curr_s;
     MCP7940N_Open();
@@ -214,24 +228,31 @@ void mode_operational_run(void)
 
     char buf[64];
     rtc_format_time(buf, next_h, next_m, next_s);
+#if defined(DEBUG_MODE_OPERATIONAL)
     Debug("[OPERATIONAL] Next alarm set : ");
     DebugLn(buf);
     if (alarm_typ == NEXT_ALARM_TEMP)
         DebugLn("[OPERATIONAL] Next alarm is MEASURE_TEMPERATURE_ALARM.");
     else
         DebugLn("[OPERATIONAL] Next alarm is DATA_TRANSFER_ALARM.");
-
+#endif
     MCP7940N_Open();
+#if defined(DEBUG_MODE_OPERATIONAL)
     DebugLn(MCP7940N_IsAlarm0Triggered() ? "[DEBUG] ALM0TRIG = YES" : "[DEBUG] ALM0TRIG = NO");
     DebugLn(MCP7940N_IsAlarmEnabled(RTC_ALARM_0) ? "[DEBUG] ALM0EN = YES" : "[DEBUG] ALM0EN = NO");
+#endif
     MCP7940N_Close();
 
+#if defined(DEBUG_MODE_OPERATIONAL)
     rtc_get_format_time(buf);
     Debug("[OPERATIONAL] Current time = ");
     DebugLn(buf);
+#endif
 
-    ///////////// Go to power_halt mode, wakeup using RTC EXTI
+///////////// Go to power_halt mode, wakeup using RTC EXTI
+#if defined(DEBUG_MODE_OPERATIONAL)
     DebugLn("[OPERATIONAL] HALT until next RTC-Alarm");
+#endif
     power_enter_halt();
     delay(100);
     enableInterrupts();
@@ -240,15 +261,19 @@ void mode_operational_run(void)
     last_set_alarm_type = alarm_typ;
     __asm__("halt");
 
+#if defined(DEBUG_MODE_OPERATIONAL)
     Debug("[DEBUG] Woke at: ");
     MCP7940N_Open();
     rtc_get_format_time(buf);
     MCP7940N_Close();
     DebugLn(buf);
+#endif
 
     if (!mode_operational_rtc_alert_triggered)
     {
+#if defined(DEBUG_MODE_OPERATIONAL)
         DebugLn("[MODE_OPERATIONAL] Unexpected wakeup without flag. Sleeping again.");
+#endif
         return;
     }
 
@@ -261,23 +286,32 @@ void mode_operational_run(void)
 
     if (!triggered)
     {
+#if defined(DEBUG_MODE_OPERATIONAL)
         DebugLn("[MODE_OPERATIONAL] RTC woke but no alarm0 flag set.");
+#endif
         return;
     }
 
     ///////////// Evaluate alarm type and state transition
     if (last_set_alarm_type == NEXT_ALARM_TEMP)
     {
+#if defined(DEBUG_MODE_OPERATIONAL)
         DebugLn("[MODE_OPERATIONAL] [Interrupt] --> Temperature measurement");
+#endif
         state_transition(MODE_OPERATIONAL);
     }
     else if (last_set_alarm_type == NEXT_ALARM_RADIO)
     {
+#if defined(DEBUG_MODE_OPERATIONAL)
         DebugLn("[MODE_OPERATIONAL] [Interrupt] --> Data transfer");
+#endif
         state_transition(MODE_DATA_TRANSFER);
     }
     else
     {
+#if defined(DEBUG_MODE_OPERATIONAL)
         DebugLn("[MODE_OPERATIONAL] [Interrupt] Unknown alarm type");
+#endif
+        nop();
     }
 }

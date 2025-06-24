@@ -3,7 +3,7 @@
 #define RTC_H
 
 #include "stm8s.h"
-#include "common/types.h"  ///< Definition von timestamp_t
+#include "types.h"  ///< Definition von timestamp_t
 
 /**
  * @file rtc.h
@@ -18,7 +18,7 @@ typedef uint8_t rtc_alarm_t;
 //void rtc_init(void);
 //void rtc_get_time(uint8_t* hour, uint8_t* minute, uint8_t* second);
 timestamp_t rtc_get_timestamp(void);
-void rtc_set_unix_timestamp(uint32_t unix_time);
+//void rtc_set_unix_timestamp(uint32_t unix_time);
 
 // ───────────── Alarmfunktionen ─────────────
 //void rtc_set_alarm(rtc_alarm_t alarm, uint8_t hour, uint8_t minute, uint8_t second);

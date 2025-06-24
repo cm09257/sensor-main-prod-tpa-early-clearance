@@ -23,31 +23,35 @@
 #include "periphery/spi_devices.h"
 #include "periphery/system.h"
 #include "modules/settings.h"
-#include "modules/storage_internal.h"
-// #include "modules/storage.h"
-// #include "modules/rtc.h"
-// #include "modules/interrupts_PCB_REV_3_1.h"
+// #include "modules/storage_internal.h"
+//  #include "modules/storage.h"
+//  #include "modules/rtc.h"
+//  #include "modules/interrupts_PCB_REV_3_1.h"
 #include "utility/debug.h"
 // #include "utility/debug_menu.h"
 #include "utility/delay.h"
 #include "utility/random.h"
 #include "stm8s_clk.h"
-#include "common/types.h"
+#include "types.h"
 #include "utility/u8toa.h"
 #include <string.h>
 
 ////////////////////// Interrupt Service Routine (ISR)
 
-INTERRUPT_HANDLER(EXTI_PORT_D_IRQHandler, 6)  ///////////////////// RTC ISR
+INTERRUPT_HANDLER(EXTI_PORT_D_IRQHandler, 6) ///////////////////// RTC ISR
 {
+#if defined(DEBUG_MAIN_C)
     DebugUVal("[ISR] Last mode = ", mode_before_halt, "");
+#endif
 
     if (mode_before_halt == MODE_HIGH_TEMPERATURE)
     {
+#if defined(DEBUG_MAIN_C)
         DebugLn("[ISR] MODE_HIGH_TEMPERATURE -> Set alert flag");
+#endif
         mode_operational_rtc_alert_triggered = TRUE;
     }
-    else if (mode_before_halt == MODE_OPERATIONAL)    
+    else if (mode_before_halt == MODE_OPERATIONAL)
     {
         mode_operational_rtc_alert_triggered = TRUE;
     }
@@ -81,7 +85,9 @@ void main(void)
     bool do_chip_erase = FALSE;
     if (!(settings->flags & SETTINGS_FLAG_FLASH_ERASE_DONE))
     {
+#if defined(DEBUG_MAIN_C)
         DebugLn("Erasing flash...");
+#endif
         do_chip_erase = TRUE;
         settings->flags |= SETTINGS_FLAG_FLASH_ERASE_DONE;
         settings->flash_record_count = 0;
@@ -89,10 +95,15 @@ void main(void)
     }
     else
     {
+#if defined(DEBUG_MAIN_C)
         DebugLn("No erase required");
+#endif
+        nop();
     }
     system_init_phase_2(do_chip_erase);
+#if defined(DEBUG_MAIN_C)
     DebugLn("=============== Sensor Main ===============");
+#endif
 
     state_init(); ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
                   // DebugMenu_Init(); // Show Debug Menu

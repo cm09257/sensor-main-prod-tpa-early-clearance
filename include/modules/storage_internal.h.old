@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include "stm8s.h"
-#include "common/types.h"  // record_t
+#include "types.h"  // record_t
 #include "app/state_machine.h" // falls wir mode_t brauchen
 
 /**

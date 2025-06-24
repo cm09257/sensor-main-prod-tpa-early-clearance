@@ -24,6 +24,132 @@ typedef enum
     RADIO_ERROR          ///< Fehler beim Senden oder Empfangen
 } radio_result_t;
 
+bool radio_send_ping_packet(uint8_t ping_type)
+{
+    uint8_t ping_packet[2] = {ping_type, 0x00};
+#if defined(DEBUG_MODE_DATA_TRANSFER)
+    DebugHex("[RADIO] Sende Ping mit Typ ", ping_type);
+#endif
+
+    RFM69_open();
+    RFM69_SetModeTx();
+    delay(5000);
+    bool ok = RFM69_Send(ping_packet, sizeof(ping_packet), RADIO_TX_TIMEOUT_MS);
+    RFM69_SetModeStandby();
+    RFM69_close();
+
+    if (!ok)
+    {
+#if defined(DEBUG_MODE_DATA_TRANSFER)
+        DebugLn("[RADIO] Senden fehlgeschlagen.");
+#endif
+        nop();
+    }
+
+    return ok;
+}
+
+void mode_data_transfer_run(void)
+{
+#if defined(DEBUG_MODE_DATA_TRANSFER)
+    DebugLn("=============== MODE_DATA_TRANSFER START===============");
+#endif
+    ///////////// Determine number of records to transfer
+    settings_load();
+    settings_t *settings = settings_get();
+    uint32_t number_of_records = settings->flash_record_count;
+#if defined(DEBUG_MODE_DATA_TRANSFER)
+    DebugUVal("[DATA_TRANSFER] Number of flash records: ", number_of_records, "");
+#endif
+    ///////////// Open RFM
+
+    ///////////// Handshake and Time Sync
+    bool ok = FALSE;
+    uint8_t count = 0;
+    while (count < 5000)
+    {
+#if defined(DEBUG_MODE_DATA_TRANSFER)
+        DebugLn("[DATA_TRANSFER] Sending data ping for initialization...");
+#endif
+        ok = radio_send_ping_packet(RADIO_PING_HEADER_DATA_TRANSFER);
+        if (ok)
+        {
+#if defined(DEBUG_MODE_DATA_TRANSFER)
+            DebugLn("Ping send ok");
+#endif
+            delay(2000);
+            count++;
+        }
+        else
+        {
+#if defined(DEBUG_MODE_DATA_TRANSFER)
+            DebugLn("Ping send failed");
+#endif
+            count++;
+        }
+    }
+    while (1)
+    {
+        nop();
+    }
+
+    if (FALSE) //! perform_handshake_and_timesync())
+    {
+#if defined(DEBUG_MODE_DATA_TRANSFER)
+        DebugLn("[DATA_TRANSFER] Handshake and sync failed.");
+#endif
+        return;
+    }
+
+    uint16_t total = flash_get_count();
+#if defined(DEBUG_MODE_DATA_TRANSFER)
+    DebugUVal("[DT] Anzahl gespeicherter Datensätze: ", total, "");
+#endif
+    if (total == 0)
+    {
+#if defined(DEBUG_MODE_DATA_TRANSFER)
+        DebugLn("[DT] Keine Daten zu übertragen");
+#endif
+        return;
+    }
+
+    const settings_t *cfg = settings_get();
+#if defined(DEBUG_MODE_DATA_TRANSFER)
+    DebugHex("[DT] Geräte-ID: ", cfg->device_id);
+    DebugLn("[DT] Phase 1: Alle Daten werden gesendet");
+#endif
+
+    uint16_t index = 0;
+    uint8_t seq_nr = 0;
+    bool success = TRUE;
+
+    /*
+    while (index < total)
+    {
+        if (!send_next_packet(cfg, &index, &seq_nr, total))
+        {
+            success = FALSE;
+            break;
+        }
+    }*/
+#if defined(DEBUG_MODE_DATA_TRANSFER)
+    DebugLn("TODO: IMPLEMENT SENDING OF PACKETS");
+
+    DebugLn(success ? "[DT] Alle Datensätze erfolgreich übertragen" : "[DT] Übertragung unvollständig");
+    DebugLn("=== MODE_DATA_TRANSFER ENDE ===");
+#endif
+    while (1)
+    {
+        nop();
+    }
+
+}
+/*
+    void mode_data_transfer_run(void)
+{
+    nop();
+}*/
+
 /*
 static bool perform_handshake_and_timesync(void)
 {
@@ -171,23 +297,6 @@ static radio_result_t radio_send_packet(const uint8_t *data, uint8_t len)
 }
 */
 
-bool radio_send_ping_packet(uint8_t ping_type)
-{
-    uint8_t ping_packet[2] = {ping_type, 0x00};
-    DebugHex("[RADIO] Sende Ping mit Typ ", ping_type);
-
-    RFM69_open();
-    RFM69_SetModeTx();
-    delay(5000);
-    bool ok = RFM69_Send(ping_packet, sizeof(ping_packet), RADIO_TX_TIMEOUT_MS);
-    RFM69_SetModeStandby();
-    RFM69_close();
-
-    if (!ok)
-        DebugLn("[RADIO] Senden fehlgeschlagen.");
-
-    return ok;
-}
 /*static radio_result_t radio_receive_ack_or_nack(void)
 {
     uint8_t rx_buf[8];
@@ -244,6 +353,7 @@ static radio_result_t radio_send_ping(uint8_t ping_type)
     return RADIO_NACK_RECEIVED;
 }
 */
+
 /*
 bool radio_receive_downlink(uint8_t *cmd, uint8_t *payload, uint8_t *length)
 {
@@ -290,7 +400,7 @@ static bool perform_handshake_and_timesync(void)
         return FALSE;
     }
     DebugLn("[DATA_TRANSFER] ACK received -> Initiating transfer");
-/*
+// /*
     uint8_t cmd;
     uint8_t payload[8];
     uint8_t len = 0;
@@ -307,90 +417,4 @@ static bool perform_handshake_and_timesync(void)
     }
 
     return TRUE;
-}*/
-
-void mode_data_transfer_run(void)
-{
-    DebugLn("=============== MODE_DATA_TRANSFER START===============");
-
-    ///////////// Determine number of records to transfer
-    settings_load();
-    settings_t *settings = settings_get();
-    uint32_t number_of_records = settings->flash_record_count;
-    DebugUVal("[DATA_TRANSFER] Number of flash records: ", number_of_records, "");
-
-    ///////////// Open RFM
-
-    ///////////// Handshake and Time Sync
-    bool ok = FALSE;
-    uint8_t count = 0;
-    while (count < 5000)
-    {
-        DebugLn("[DATA_TRANSFER] Sending data ping for initialization...");
-        ok = radio_send_ping_packet(RADIO_PING_HEADER_DATA_TRANSFER);        
-        if (ok)
-        {
-            DebugLn("Ping send ok");
-            delay(2000);
-            count++;
-        }
-        else
-        {
-            DebugLn("Ping send failed");
-            count++;
-        }
-    }
-    while (1)
-    {
-        nop();
-    }
-
-    if (FALSE) //! perform_handshake_and_timesync())
-    {
-        DebugLn("[DATA_TRANSFER] Handshake and sync failed.");
-        state_transition(MODE_SLEEP);
-        return;
-    }
-
-    uint16_t total = flash_get_count();
-    DebugUVal("[DT] Anzahl gespeicherter Datensätze: ", total, "");
-    if (total == 0)
-    {
-        DebugLn("[DT] Keine Daten zu übertragen");
-        state_transition(MODE_SLEEP);
-        return;
-    }
-
-    const settings_t *cfg = settings_get();
-    DebugHex("[DT] Geräte-ID: ", cfg->device_id);
-    DebugLn("[DT] Phase 1: Alle Daten werden gesendet");
-
-    uint16_t index = 0;
-    uint8_t seq_nr = 0;
-    bool success = TRUE;
-
-    /*
-    while (index < total)
-    {
-        if (!send_next_packet(cfg, &index, &seq_nr, total))
-        {
-            success = FALSE;
-            break;
-        }
-    }*/
-    DebugLn("TODO: IMPLEMENT SENDING OF PACKETS");
-
-    DebugLn(success ? "[DT] Alle Datensätze erfolgreich übertragen" : "[DT] Übertragung unvollständig");
-    DebugLn("=== MODE_DATA_TRANSFER ENDE ===");
-    while (1)
-    {
-        nop();
-    }
-
-    state_transition(MODE_SLEEP);
-}
-/*
-    void mode_data_transfer_run(void)
-{
-    nop();
 }*/

@@ -2,8 +2,20 @@
 #define SETTINGS_H
 
 #include <stdint.h>
-#include "common/types.h"
+#include "types.h"
 #include "stm8s.h"
+
+//////////// Debug Message Active Flags for ind. files
+
+//#define DEBUG_MODE_TEST 1
+//#define DEBUG_MODE_WAIT_FOR_ACTIVATION 1
+//#define DEBUG_MODE_DATA_TRANSFER 1
+//#define DEBUG_MODE_HI_TEMP 1
+//#define DEBUG_MODE_OPERATIONAL 1
+//#define DEBUG_MODE_PRE_HI_TEMP 1
+//#define DEBUG_STORAGE_C 1
+//#define DEBUG_MAIN_C 1
+//#define DEBUG_STATE_MACHINE_C 1
 
 /**
  * @file settings.h
@@ -102,7 +114,7 @@ typedef struct
 /**
  * @brief Gibt aktuellen Settings-Zeiger zurück (readonly)
  */
-const settings_t *settings_get(void);
+settings_t *settings_get(void);
 
 /**
  * @brief Lädt Einstellungen aus EEPROM (mit CRC-Validierung)

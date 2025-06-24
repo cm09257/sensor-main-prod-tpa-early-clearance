@@ -2,7 +2,7 @@
 #define RADIO_H
 
 #include <stdint.h>
-#include "common/types.h"
+#include "types.h"
 #include "stm8s.h"
 
 #define RADIO_TX_TIMEOUT_MS 200

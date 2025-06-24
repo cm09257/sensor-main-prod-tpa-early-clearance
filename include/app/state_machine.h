@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include "stm8s.h"
-#include "common/types.h"
+#include "types.h"
 
 
 // === Interner Zustand ===

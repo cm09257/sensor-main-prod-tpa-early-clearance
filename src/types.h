@@ -27,13 +27,11 @@ typedef uint32_t timestamp_t;
  * Wird im internen oder externen Flash gespeichert und über Funk übertragen.
  * Die Temperatur ist als Gleitkommazahl gespeichert, wird jedoch zur Übertragung konvertiert.
  */
-#pragma pack(1)
 typedef struct  {
     timestamp_t timestamp;  ///< Zeitstempel in 5-Minuten-Schritten
     float temperature;      ///< Temperatur in °C
     uint8_t flags;          ///< Statusbits (nur untere 4 Bit genutzt, z. B. CRC-valid, Sensorfehler)
 } record_t;
-#pragma pack()
 
 /**
  * @enum mode_t

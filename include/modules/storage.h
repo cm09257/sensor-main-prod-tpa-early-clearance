@@ -3,7 +3,7 @@
 
 #include "stm8s.h"
 #include <stdint.h>
-#include "common/types.h"
+#include "types.h"
 
 /// @file storage.h
 /// @brief Schnittstelle für EEPROM- und Flash-Speicherfunktionen

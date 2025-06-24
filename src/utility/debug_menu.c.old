@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "stm8s_uart1.h"
 #include "app/state_machine.h"
-#include "common/types.h" // für mode_name(), MODE_COUNT
+#include "types.h" // für mode_name(), MODE_COUNT
 #include "modules/rtc.h"
 #include "periphery/tmp126.h"
 #include "periphery/uart.h"

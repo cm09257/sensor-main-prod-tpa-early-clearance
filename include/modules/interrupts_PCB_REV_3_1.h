@@ -1,7 +1,7 @@
 #ifndef INTERRUPTS_H
 #define INTERRUPTS_H
 
-#include "common/types.h"
+#include "types.h"
 
 // Interrupt Vector Numbers (Priority)
 #define PORT_A_INTERRUPT_VECTOR 3

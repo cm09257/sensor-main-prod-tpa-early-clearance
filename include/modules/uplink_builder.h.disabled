@@ -2,7 +2,7 @@
 #define UPLINK_BUILDER_H
 
 #include <stdint.h>
-#include "common/types.h"  // enthält Definition von record_t etc.
+#include "types.h"  // enthält Definition von record_t etc.
 
 /// @file uplink_builder.h
 /// @brief Erstellung von Uplink-Datenpaketen gemäß DFP-2

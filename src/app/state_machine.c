@@ -10,9 +10,9 @@
 #include "stm8s_gpio.h"
 #include "periphery/hardware_resources.h"
 #include "app/state_machine.h"
-//#include "modules/radio.h"
+// #include "modules/radio.h"
 #include "modules/settings.h"
-//#include "modules/uplink_builder.h"
+// #include "modules/uplink_builder.h"
 #include "modules/storage.h"
 #include "config/config.h"
 #include "utility/delay.h"
@@ -33,7 +33,6 @@ timestamp_t last_measurement_ts = 0;
 bool mode_transition_pending = FALSE;
 mode_t next_mode;
 
-
 mode_t mode_before_halt = MODE_TEST;
 
 // === Initialisierung ===
@@ -46,8 +45,9 @@ mode_t mode_before_halt = MODE_TEST;
  */
 void state_init(void)
 {
-
+#if defined(DEBUG_STATE_MACHINE_C)
     DebugLn("[STATE INIT] Loading persisted mode ...");
+#endif
     mode_t persisted;
 
     if (load_persisted_mode(&persisted)) // persisted mode stored in eeprom ?
@@ -55,18 +55,24 @@ void state_init(void)
         if (persisted <= MODE_SLEEP)
         {
             current_mode = persisted;
+#if defined(DEBUG_STATE_MACHINE_C)
             DebugUVal("[STATE INIT] Starting in previously saved mode ", current_mode, ".");
+#endif
         }
         else
         {
             current_mode = MODE_TEST;
+#if defined(DEBUG_STATE_MACHINE_C)
             DebugLn("[STATE INIT] Persisted mode invalid. Switching to MODE_TEST.");
+#endif
         }
     }
     else
     {
         current_mode = MODE_TEST;
+#if defined(DEBUG_STATE_MACHINE_C)
         DebugLn("[STATE INIT] No persisted mode found. Switching to MODE_TEST.");
+#endif
     }
 
     last_measurement_ts = 0;
@@ -83,9 +89,9 @@ void state_init(void)
  */
 void state_process(void)
 {
-    
- //   DebugLn("[sensor-main-state-machine] In state_process.");
- //   DebugUVal("[sensor-main-state-machine] current_mode = ",current_mode,"");
+
+    //   DebugLn("[sensor-main-state-machine] In state_process.");
+    //   DebugUVal("[sensor-main-state-machine] current_mode = ",current_mode,"");
     switch (current_mode)
     {
     case MODE_TEST:
@@ -93,7 +99,7 @@ void state_process(void)
         break;
 
     case MODE_WAIT_FOR_ACTIVATION:
- //       mode_wait_for_activation_run();
+        //       mode_wait_for_activation_run();
         break;
 
     case MODE_PRE_HIGH_TEMP:
@@ -113,12 +119,14 @@ void state_process(void)
         break;
 
     case MODE_SLEEP:
+#if defined(DEBUG_STATE_MACHINE_C)
         DebugLn("Enter Mode Sleep");
-        while(1)
+#endif
+        while (1)
         {
             delay(50);
         }
-        //power_enter_halt(); // verlässt Funktion erst nach Wakeup
+        // power_enter_halt(); // verlässt Funktion erst nach Wakeup
         break;
     }
 
@@ -132,7 +140,9 @@ void state_process(void)
 
 void set_mode_debug_only(mode_t new_mode)
 {
+#if defined(DEBUG_STATE_MACHINE_C)
     DebugUVal("[sensor-main-state-machine] Debug-Only setting of mode to ", new_mode, "");
+#endif
     current_mode = new_mode;
 }
 

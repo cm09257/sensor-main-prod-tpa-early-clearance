@@ -1,7 +1,7 @@
 #ifndef MODE_OPERATIONAL_H
 #define MODE_OPERATIONAL_H
 
-#include "common/types.h"
+#include "types.h"
 
 extern volatile bool mode_operational_rtc_alert_triggered;
 

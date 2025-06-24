@@ -24,14 +24,14 @@ static uint8_t calc_crc8(const uint8_t *data, uint8_t len)
     return crc;
 }
 
-const settings_t *settings_get(void)
+settings_t *settings_get(void)
 {
     return &current_settings;
 }
 
 void settings_set_default(void)
 {
-    DebugLn("[settings] Setze Default-Werte...");
+    //DebugLn("[settings] Setze Default-Werte...");
 
     current_settings.high_temp_measurement_interval_5min = 2;           ///< Intervall im HIGH_TEMPERATURE-Modus
     current_settings.transfer_mode = 0;                                 ///< 0 = alle Daten, 1 = nur neue Datensätze
