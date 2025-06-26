@@ -400,7 +400,7 @@ static bool perform_handshake_and_timesync(void)
         return FALSE;
     }
     DebugLn("[DATA_TRANSFER] ACK received -> Initiating transfer");
-// /*
+// 
     uint8_t cmd;
     uint8_t payload[8];
     uint8_t len = 0;

@@ -17,6 +17,10 @@
 //#define DEBUG_MAIN_C 1
 //#define DEBUG_STATE_MACHINE_C 1
 
+#define DEVICE_ID_LSB 0x00
+#define DEVICE_ID_MSB 0xAA
+
+
 /**
  * @file settings.h
  * @brief Definitionen für Geräteeinstellungen, Kommando-Codes und Funkprotokoll.
@@ -106,7 +110,8 @@ typedef struct
     uint8_t meas_fixed_hour;                     ///< nur bei meas_mode=1: Stunde (0–23)
     uint8_t meas_fixed_minute;                   ///< nur bei meas_mode=1: Minute (0–59)
     float cool_down_threshold;                   ///< Temperatur-Schwelle
-    uint32_t device_id;                          ///< Eindeutige ID
+    uint8_t device_id_msb;                          ///< Eindeutige ID
+    uint8_t device_id_lsb;                          ///< Eindeutige ID
 } settings_t;
 
 // === Zugriff auf Einstellungen ===

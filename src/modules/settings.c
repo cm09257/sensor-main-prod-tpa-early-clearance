@@ -46,7 +46,8 @@ void settings_set_default(void)
     current_settings.meas_fixed_hour = 10;                              ///< nur bei meas_mode=1: Stunde (0–23)
     current_settings.meas_fixed_minute = 0;                             ///< nur bei meas_mode=1: Minute (0–59)
     current_settings.cool_down_threshold = DEFAULT_COOL_DOWN_THRESHOLD; ///< Temperatur-Schwelle
-    current_settings.device_id = 0xFFFFFFFFF;                           ///< Eindeutige ID
+    current_settings.device_id_lsb = DEVICE_ID_LSB;                           ///< Eindeutige ID
+    current_settings.device_id_msb = DEVICE_ID_MSB;                           ///< Eindeutige ID
     current_settings.flash_record_count = 0;
 }
 void settings_load(void)
