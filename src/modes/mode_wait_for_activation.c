@@ -62,6 +62,7 @@ void mode_wait_for_activation_run(void)
                     RFM69_open();
                     if (wait_for_cmd_by_gateway(CMD_TIMEOUT, data))
                     {
+                        DebugLn("CMD Received");
                         if (data[1] == CMD_SET_RTC_OFFSET)
                         {
 #if defined(DEBUG_MODE_WAIT_FOR_ACTIVATION)
