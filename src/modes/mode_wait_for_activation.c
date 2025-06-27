@@ -59,6 +59,7 @@ void mode_wait_for_activation_run(void)
                 if (cmd_announced)
                 {
                     uint8_t data[8];
+                    RFM69_open();
                     if (wait_for_cmd_by_gateway(CMD_TIMEOUT, data))
                     {
                         if (data[1] == CMD_SET_RTC_OFFSET)
@@ -94,6 +95,7 @@ void mode_wait_for_activation_run(void)
                             return;
                         }
                     }
+                    RFM69_close();
                 }
             }
             retry_count++;
