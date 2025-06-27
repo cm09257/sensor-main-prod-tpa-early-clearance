@@ -95,33 +95,49 @@ void state_process(void)
     switch (current_mode)
     {
     case MODE_TEST:
+#if defined(DEBUG_STATE_MACHINE_C)
+        DebugLn("[STATE_MACHINE]->MODE_TEST");
+#endif
         mode_test_run();
         break;
 
     case MODE_WAIT_FOR_ACTIVATION:
-        //       mode_wait_for_activation_run();
+#if defined(DEBUG_STATE_MACHINE_C)
+        DebugLn("[STATE_MACHINE]->MODE_WAIT_FOR_ACTIVATION");
+#endif
+        mode_wait_for_activation_run();
         break;
 
     case MODE_PRE_HIGH_TEMP:
+#if defined(DEBUG_STATE_MACHINE_C)
+        DebugLn("[STATE_MACHINE]->MODE_PRE_HIGH_TEMP");
+#endif
         mode_pre_high_temperature_run();
         break;
 
     case MODE_HIGH_TEMPERATURE:
+#if defined(DEBUG_STATE_MACHINE_C)
+        DebugLn("[STATE_MACHINE]->MODE_HIGH_TEMPERATURE");
+#endif
         mode_high_temperature_run();
         break;
 
     case MODE_OPERATIONAL:
+#if defined(DEBUG_STATE_MACHINE_C)
+        DebugLn("[STATE_MACHINE]->MODE_OPERATIONAL");
+#endif
         mode_operational_run();
         break;
 
     case MODE_DATA_TRANSFER:
+#if defined(DEBUG_STATE_MACHINE_C)
+        DebugLn("[STATE_MACHINE]->MODE_DATA_TRANSFER");
+#endif
         mode_data_transfer_run();
         break;
 
     case MODE_SLEEP:
-#if defined(DEBUG_STATE_MACHINE_C)
-        DebugLn("Enter Mode Sleep");
-#endif
+
         while (1)
         {
             delay(50);

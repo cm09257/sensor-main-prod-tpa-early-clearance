@@ -102,14 +102,14 @@ void main(void)
     }
     system_init_phase_2(do_chip_erase);
 #if defined(DEBUG_MAIN_C)
-    DebugLn("=============== Sensor Main ===============");
+    DebugLn("=Sensor Main=");
 #endif
 
     state_init(); ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
                   // DebugMenu_Init(); // Show Debug Menu
 
     // DebugLn("[sensor-main] Going into mode MODE_PRE_HIGH_TEMP");
-    set_mode_debug_only(MODE_DATA_TRANSFER);
+    set_mode_debug_only(MODE_TEST);
     // DebugLn("[sensor-main] MODE_PRE_HIGH_TEMP set.");
     while (1)
     {

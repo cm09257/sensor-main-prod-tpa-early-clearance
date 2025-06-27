@@ -7,15 +7,15 @@
 
 //////////// Debug Message Active Flags for ind. files
 
-//#define DEBUG_MODE_TEST 1
-//#define DEBUG_MODE_WAIT_FOR_ACTIVATION 1
+#define DEBUG_MODE_TEST 1
+#define DEBUG_MODE_WAIT_FOR_ACTIVATION 1
 //#define DEBUG_MODE_DATA_TRANSFER 1
 //#define DEBUG_MODE_HI_TEMP 1
 //#define DEBUG_MODE_OPERATIONAL 1
 //#define DEBUG_MODE_PRE_HI_TEMP 1
 //#define DEBUG_STORAGE_C 1
-//#define DEBUG_MAIN_C 1
-//#define DEBUG_STATE_MACHINE_C 1
+#define DEBUG_MAIN_C 1
+#define DEBUG_STATE_MACHINE_C 1
 
 #define DEVICE_ID_LSB 0x00
 #define DEVICE_ID_MSB 0xAA
