@@ -14,7 +14,7 @@ void mode_test_run(void)
     DebugLn("[MODE_TEST] Wait 5sec before switching to MODE_WAIT_FOR_ACTIVATION.");
 #endif
 
-    delay(5000); // Wartezeit in Millisekunden
+    delay(500); // Wartezeit in Millisekunden
 #if defined(DEBUG_MODE_TEST)
     DebugLn("[MODE_TEST] Switching to MODE_WAIT_FOR_ACTIVATION.");
 #endif

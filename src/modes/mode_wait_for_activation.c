@@ -9,14 +9,15 @@
 #include "utility/delay.h"
 #include "periphery/power.h"
 #include "periphery/mcp7940n.h"
+#include "periphery/RFM69.h"
 #include "config/config.h"
 #include "app/state_machine.h"
 #include "modules/packet_handler.h"
 #include "periphery/hardware_resources.h"
 
 #define MAX_ACTIVATION_PING_SEND_RETRIES 3
-#define ACK_TIMEOUT 20
-#define CMD_TIMEOUT 20
+#define ACK_TIMEOUT 1000
+#define CMD_TIMEOUT 1000
 #define DELAY_BEFORE_RETRY 10
 
 void mode_wait_for_activation_run(void)
@@ -44,8 +45,10 @@ void mode_wait_for_activation_run(void)
 
         while ((!ack_received) && (retry_count < MAX_ACTIVATION_PING_SEND_RETRIES))
         {
+            RFM69_open();
             send_uplink_ping_for_activation(DEVICE_ID_MSB, DEVICE_ID_LSB);
             ack_received = wait_for_ack_by_gateway(ACK_TIMEOUT, &cmd_announced);
+            RFM69_close();
 
             if (ack_received)
             {
