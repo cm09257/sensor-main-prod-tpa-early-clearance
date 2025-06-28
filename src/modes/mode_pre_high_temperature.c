@@ -20,7 +20,7 @@ volatile bool pre_hi_temp_alert_triggered = FALSE;
 void mode_pre_high_temperature_run(void)
 {
 #if defined(DEBUG_MODE_PRE_HI_TEMP)
-    DebugLn("=============== MODE_PRE_HIGH_TEMP ===============");
+    DebugLn("=MD_PRE_HI_TMP=");
 #endif
 
     ////////////// Configuring TMP126_WAKE pin for EXTI
@@ -51,7 +51,7 @@ void mode_pre_high_temperature_run(void)
 
 ////////////// Woke up from EXTI
 #if defined(DEBUG_MODE_PRE_HI_TEMP)
-    DebugLn("======================== Hi Alert Triggered ===");
+    DebugLn("=Hi Alrt Trigd=");
 #endif
     disableInterrupts();
 
