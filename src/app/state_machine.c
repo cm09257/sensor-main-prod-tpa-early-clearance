@@ -46,7 +46,7 @@ mode_t mode_before_halt = MODE_TEST;
 void state_init(void)
 {
 #if defined(DEBUG_STATE_MACHINE_C)
-    DebugLn("[STATE INIT] Loading persisted mode ...");
+    //DebugLn("[STATE INIT] Loading persisted mode ...");
 #endif
     mode_t persisted;
 
@@ -56,14 +56,14 @@ void state_init(void)
         {
             current_mode = persisted;
 #if defined(DEBUG_STATE_MACHINE_C)
-            DebugUVal("[STATE INIT] Starting in previously saved mode ", current_mode, ".");
+         //   DebugUVal("[STATE INIT] Starting in previously saved mode ", current_mode, ".");
 #endif
         }
         else
         {
             current_mode = MODE_TEST;
 #if defined(DEBUG_STATE_MACHINE_C)
-            DebugLn("[STATE INIT] Persisted mode invalid. Switching to MODE_TEST.");
+          //  DebugLn("[STATE INIT] Persisted mode invalid. Switching to MODE_TEST.");
 #endif
         }
     }
@@ -71,7 +71,7 @@ void state_init(void)
     {
         current_mode = MODE_TEST;
 #if defined(DEBUG_STATE_MACHINE_C)
-        DebugLn("[STATE INIT] No persisted mode found. Switching to MODE_TEST.");
+    //    DebugLn("[STATE INIT] No persisted mode found. Switching to MODE_TEST.");
 #endif
     }
 
@@ -96,42 +96,42 @@ void state_process(void)
     {
     case MODE_TEST:
 #if defined(DEBUG_STATE_MACHINE_C)
-        DebugLn("[STATE_MACHINE]->MODE_TEST");
+        DebugLn("[STMN]->MD_TEST");
 #endif
         mode_test_run();
         break;
 
     case MODE_WAIT_FOR_ACTIVATION:
 #if defined(DEBUG_STATE_MACHINE_C)
-        DebugLn("[STATE_MACHINE]->MODE_WAIT_FOR_ACTIVATION");
+        DebugLn("[STMN]->MD_WT_FR_ACT");
 #endif
         mode_wait_for_activation_run();
         break;
 
     case MODE_PRE_HIGH_TEMP:
 #if defined(DEBUG_STATE_MACHINE_C)
-        DebugLn("[STATE_MACHINE]->MODE_PRE_HIGH_TEMP");
+        DebugLn("[STMN]->MD_PRE_HI_TMP");
 #endif
         mode_pre_high_temperature_run();
         break;
 
     case MODE_HIGH_TEMPERATURE:
 #if defined(DEBUG_STATE_MACHINE_C)
-        DebugLn("[STATE_MACHINE]->MODE_HIGH_TEMPERATURE");
+        DebugLn("[STMN]->MD_HI_TMP");
 #endif
         mode_high_temperature_run();
         break;
 
     case MODE_OPERATIONAL:
 #if defined(DEBUG_STATE_MACHINE_C)
-        DebugLn("[STATE_MACHINE]->MODE_OPERATIONAL");
+        DebugLn("[STMN]->MD_OP");
 #endif
         mode_operational_run();
         break;
 
     case MODE_DATA_TRANSFER:
 #if defined(DEBUG_STATE_MACHINE_C)
-        DebugLn("[STATE_MACHINE]->MODE_DATA_TRANSFER");
+        DebugLn("[STMN]->MD_DT_XFR");
 #endif
         mode_data_transfer_run();
         break;
@@ -157,7 +157,7 @@ void state_process(void)
 void set_mode_debug_only(mode_t new_mode)
 {
 #if defined(DEBUG_STATE_MACHINE_C)
-    DebugUVal("[sensor-main-state-machine] Debug-Only setting of mode to ", new_mode, "");
+    DebugUVal("[STMN] Set md to ", new_mode, ""); // Debug-Only setting of mode to
 #endif
     current_mode = new_mode;
 }
