@@ -11,9 +11,6 @@
 #include "utility/delay.h"
 #include "utility/debug.h"
 
-
-#define PRE_HI_TEMP_MEAS_INTERVAL_IN_MIN 2
-
 static bool pre_hi_temp_interrupt_configured = FALSE;
 volatile bool pre_hi_temp_alert_triggered = FALSE;
 

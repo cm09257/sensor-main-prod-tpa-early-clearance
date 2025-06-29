@@ -22,7 +22,7 @@ timestamp_t rtc_get_timestamp(void);
 
 // ───────────── Alarmfunktionen ─────────────
 //void rtc_set_alarm(rtc_alarm_t alarm, uint8_t hour, uint8_t minute, uint8_t second);
-void rtc_set_alarm_in_minutes(rtc_alarm_t alarm, uint8_t delta_min);
+void rtc_set_alarm_in_minutes(rtc_alarm_t alarm, uint16_t delta_min);
 //void rtc_set_alarm_offset(rtc_alarm_t alarm, uint8_t offset_minutes, uint8_t offset_seconds);
 //void rtc_clear_alarm(rtc_alarm_t alarm);
 //uint8_t rtc_was_alarm_triggered(rtc_alarm_t alarm);

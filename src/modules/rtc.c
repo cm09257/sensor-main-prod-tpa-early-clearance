@@ -1,4 +1,5 @@
 #include "modules/rtc.h"
+#include "modules/helper_functions.h"
 #include "periphery/mcp7940n.h"
 #include "stm8s_exti.h"
 #include "stm8s_gpio.h"
@@ -32,44 +33,77 @@ void rtc_get_format_time(char *buf)
 
 timestamp_t rtc_get_timestamp(void)
 {
+    //////// Reference time/date: 01.01.2025 00:00:00
     uint8_t h, m, s;
+    uint8_t day, month, yr_since_2000;
+    uint8_t wkday;
+    uint16_t yr_calendar;
+
+    //////// Get date, time
     MCP7940N_Open();
+    MCP7940N_GetDate(&wkday, &day, &month, &yr_since_2000);
+    yr_calendar = yr_since_2000 + 2000;
     MCP7940N_GetTime(&h, &m, &s);
     MCP7940N_Close();
 
-    uint32_t ts = ((uint32_t)h * 60 + m) / 5;
+    //////// Sanity Check
+    if (yr_calendar < 2025)
+        return 0;
 
-    // Debug("[RTC] Timestamp (5-min): ");
-    // char ts_str[12];
-    // (ts_str, "%lu", (unsigned long)ts);
-    // DebugLn(ts_str);
+    //////// Compute Number of Minutes since 01.01.2025 00:00:00
+    uint32_t minutes_total = 0;
+    uint16_t year = 2025;
 
-    return ts;
+    while (year < yr_calendar)
+    {
+        minutes_total += (is_leap_year(year) ? 366 : 365) * 1440UL;
+        year++;
+    }
+
+    // Add days of current year
+    uint16_t days_this_year = 0;
+    static const uint8_t days_per_month[12] = {
+        31, 28, 31, 30, 31, 30,
+        31, 31, 30, 31, 30, 31};
+
+    for (uint8_t i = 0; i < (month - 1); ++i)
+        days_this_year += days_per_month[i];
+
+    // Add leap day if past February in leap year
+    if (month > 2 && is_leap_year(yr_calendar))
+        days_this_year++;
+
+    days_this_year += (day - 1);
+
+    minutes_total += days_this_year * 1440UL;
+    minutes_total += h * 60UL + m;
+
+    timestamp_t ts_5min = minutes_total / 5;
+
+    return ts_5min;
 }
 
-void rtc_set_alarm_in_minutes(rtc_alarm_t alarm, uint8_t delta_min)
+void rtc_set_alarm_in_minutes(rtc_alarm_t alarm, uint16_t delta_min)
 {
     uint8_t h, m, s;
     MCP7940N_Open();
     MCP7940N_GetTime(&h, &m, &s);
-    MCP7940N_Close();
 
-    uint8_t new_m = (m + delta_min) % 60;
-    uint8_t new_h = (h + (m + delta_min) / 60) % 24;
+    /* add 2 s Puffer und ggf. Übertrag */
+    s += 2;                       // 59 + 2 = 61
+    if (s >= 60) {
+        s -= 60;                  // 61 -> 1
+        ++delta_min;              // Übertrag: +1 Minute
+    }
 
-    //  char buf[32];
-    // rtc_format_time(buf, new_h, new_m, s);
-    // Debug("Alarm at: ");
-    //  DebugLn(buf);
-    // DebugUVal("Alarm m = ", new_m, "");
-    // DebugUVal("Alarm s", s, "");
-    MCP7940N_Open();
-    delay(5);
+    uint32_t total = (uint32_t)m + delta_min;
+    uint8_t new_m = total % 60;
+    uint8_t new_h = (h + total / 60) % 24;
+
     MCP7940N_ConfigureAbsoluteAlarmX(alarm, new_h, new_m, s);
-    //   DebugLn("Configured abs alarm");
-    delay(5);
     MCP7940N_Close();
 }
+
 
 /*
 void rtc_set_alarm_offset(rtc_alarm_t alarm, uint8_t offset_minutes, uint8_t offset_seconds)

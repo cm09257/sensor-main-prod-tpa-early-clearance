@@ -15,10 +15,6 @@
 #include "modules/packet_handler.h"
 #include "periphery/hardware_resources.h"
 
-#define MAX_ACTIVATION_PING_SEND_RETRIES 3
-#define ACK_TIMEOUT 1000
-#define CMD_TIMEOUT 1000
-#define DELAY_BEFORE_RETRY 10
 
 void mode_wait_for_activation_run(void)
 {
@@ -30,50 +26,57 @@ void mode_wait_for_activation_run(void)
     GPIO_Init(RTC_WAKE_PORT, RTC_WAKE_PIN, GPIO_MODE_IN_FL_IT);
     EXTI_SetExtIntSensitivity(RTC_EXTI_PORT, EXTI_SENSITIVITY_FALL_ONLY);
 
+    ///////////// Prepare main loop
     bool activation_successful = FALSE;
 
+    ///////////// Main Loop
     while (1)
     {
 
-//////////////// Send activation Ping
+    //////////////// Send activation Ping
 #if defined(DEBUG_MODE_WAIT_FOR_ACTIVATION)
-        DebugLn("[SENT]ACT_PNG");
+        DebugLn("[SENT]ActPng");
 #endif
+        //////////// Init retry counter, ack & cmd_announce flags
         uint8_t retry_count = 0;
         bool ack_received = FALSE;
         bool cmd_announced = FALSE;
 
+        //////////// Send ping & wait-for-ack loop
         while ((!ack_received) && (retry_count < MAX_ACTIVATION_PING_SEND_RETRIES))
         {
+            //////// Send ping
             RFM69_open();
             send_uplink_ping_for_activation(DEVICE_ID_MSB, DEVICE_ID_LSB);
-            ack_received = wait_for_ack_by_gateway(ACK_TIMEOUT, &cmd_announced);
+
+            //////// Check for ack
+            ack_received = wait_for_ack_by_gateway(WAIT_FOR_ACT_ACK_TIMEOUT, &cmd_announced);
 
             if (ack_received)
             {
 #if defined(DEBUG_MODE_WAIT_FOR_ACTIVATION)
-                DebugLn("[RCVD]ACKBYGTWY");
+                DebugLn("[RCVD]AckByGtwy");
 #endif
 
                 if (cmd_announced)
                 {
-                    DebugLn("Wt fr cmd");
+                    // DebugLn("Wt fr cmd");
                     uint8_t rx_data[8];
                     RFM69_WriteReg(RFM_REG_IRQ_FLAGS2, 0x10); // FIFOReset
                     RFM69_SetModeRx();                        // neuer Sync
 
                     uint16_t timeout = 0;
-                    while (timeout < 100) /////// RECEIVE LOOP Wait For Command
+                    while (timeout < WAIT_FOR_ACT_CMD_TIMEOUT_LOOP) /////// RECEIVE LOOP Wait For Command
                     {
                         ///////////// Receive packet
-                        bool ok = RFM69_ReceiveFixed8BytesECC(rx_data, 200);
+                        bool ok = RFM69_ReceiveFixed8BytesECC(rx_data, WAIT_FOR_ACT_CMD_TIMEOUT);
 
                         ///////////// Extract header/cmd
                         uint8_t header_byte = rx_data[0];
                         uint8_t cmd_byte = rx_data[1];
 
                         ///////////// CMD_SET_RTC_OFFSET?
-                        if ((header_byte == DOWNLINK_HEADER) && (cmd_byte == CMD_SET_RTC_OFFSET))
+                        if (ok && ((header_byte == DOWNLINK_HEADER) && (cmd_byte == CMD_SET_RTC_OFFSET)))
                         {
 
                             ///////// Decode CMD_SET_RTC
@@ -84,7 +87,7 @@ void mode_wait_for_activation_run(void)
                             if (year > 2040)
                             {
                                 activation_successful = FALSE;
-                                DebugLn("[FAIL]INVLD_CMD");
+                                DebugLn("[FAIL]InvldCmd");
                             }
                             else
                             {
@@ -95,8 +98,8 @@ void mode_wait_for_activation_run(void)
                                 send_uplink_ack_by_sensor(DEVICE_ID_MSB, DEVICE_ID_LSB);
                                 delay(200);
                                 send_uplink_ack_by_sensor(DEVICE_ID_MSB, DEVICE_ID_LSB);
-                                DebugLn("[RCVD]CMDSETRTC");
-                                DebugLn("[SENT]ACKBYSENS");
+                                DebugLn("[RCVD]CmdSetRtc");
+                                DebugLn("[SENT]AckBySns");
 
                                 ///////// Set RTC
                                 MCP7940N_Open();
@@ -119,7 +122,7 @@ void mode_wait_for_activation_run(void)
                                 DebugLn(buf);
 #endif
                                 activation_successful = TRUE;
-                                DebugLn("=ACT.COMPL=");
+                                DebugLn("=ActCompl=");
                                 state_transition(MODE_PRE_HIGH_TEMP);
                                 RFM69_close();
                                 return;

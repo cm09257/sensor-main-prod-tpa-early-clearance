@@ -15,8 +15,6 @@
 #include "utility/delay.h"
 #include <string.h>
 
-#define DEV_MODE_OPERATIONAL_TESTING 1
-
 // Optional: Definition der Flags für record_t.flags
 #define FLAG_NONE 0x00
 #define FLAG_SENSOR_ERR 0x02
@@ -66,10 +64,10 @@ static uint32_t calc_next_alarm_sec(const alarm_t *alarm, uint32_t now_sec)
     {
         uint16_t interval_sec = alarm->alarm_interval_5_min * 5 * 60;
 
-#if defined(DEV_MODE_OPERATIONAL_TESTING)
-        DebugUVal("[DEBUG] Shortened seconds to next alarm from ", interval_sec, "sec");
+#if defined(DEBUG_CONFIGURATION)
+        //DebugUVal("[DEBUG] Shortened seconds to next alarm from ", interval_sec, "sec");
         interval_sec = interval_sec / 10;
-        DebugUVal("[DEBUG] to ", interval_sec, "sec.");
+      //  DebugUVal("[DEBUG] to ", interval_sec, "sec.");
 #endif
 
         uint32_t next = ((now_sec / interval_sec) + 1) * interval_sec;
@@ -129,7 +127,7 @@ void calculate_next_alarm(
 void mode_operational_run(void)
 {
 #if defined(DEBUG_MODE_OPERATIONAL)
-    DebugLn("=============== MODE_OPERATIONAL START ===============");
+    DebugLn("=MD_OP=");
 #endif
     settings_t *settings = settings_get();
 
@@ -148,10 +146,10 @@ void mode_operational_run(void)
     measure_temp_alarm.fixed_alarm_s = 0;
 
     ///////////// Debug RTC alarm status
-    MCP7940N_Open();
-    DebugLn(MCP7940N_IsAlarm0Triggered() ? "[DEBUG] ALM0TRIG = YES" : "[DEBUG] ALM0TRIG = NO");
-    DebugLn(MCP7940N_IsAlarmEnabled(0) ? "[DEBUG] ALM0EN = YES" : "[DEBUG] ALM0EN = NO");
-    MCP7940N_Close();
+  //  MCP7940N_Open();
+  //  DebugLn(MCP7940N_IsAlarm0Triggered() ? "[DEBUG] ALM0TRIG = YES" : "[DEBUG] ALM0TRIG = NO");
+   // DebugLn(MCP7940N_IsAlarmEnabled(0) ? "[DEBUG] ALM0EN = YES" : "[DEBUG] ALM0EN = NO");
+   // MCP7940N_Close();
 
     ///////////// Configuring RTC_WAKE pin for EXTI
     GPIO_Init(RTC_WAKE_PORT, RTC_WAKE_PIN, GPIO_MODE_IN_FL_IT);
@@ -165,18 +163,18 @@ void mode_operational_run(void)
     if (temp_c < -100.0f || temp_c > 200.0f)
     {
 #if defined(DEBUG_MODE_OPERATIONAL)
-        DebugLn("[MODE_OPERATIONAL] Sensor fail or invalid measurement.");
+        DebugLn("[MDOP]tmp meas err");
 #endif
         return;
     }
 #if defined(DEBUG_MODE_OPERATIONAL)
-    DebugFVal("[MODE_OPERATIONAL] Measured temperature: ", temp_c, "degC");
+    DebugFVal("[MDOP]Meas tmp:", temp_c, "");
 #endif
 
     ///////////// Get timestamp from RTC
     timestamp_t ts = rtc_get_timestamp();
 #if defined(DEBUG_MODE_OPERATIONAL)
-    DebugUVal("[OPERATIONAL] Timestamp = ", (uint16_t)ts, "*5min");
+    DebugUVal("[MDOP]Timest=", (uint16_t)ts, "*5mn");
 #endif
     ///////////// Create data record
     record_t rec;
@@ -197,11 +195,11 @@ void mode_operational_run(void)
 #if defined(DEBUG_MODE_OPERATIONAL)
     if (!ok)
     {
-        DebugLn("[OPERATIONAL] Failed writing into external flash.");
+        DebugLn("[MDOP]Rec>flsh err");
     }
     else
     {
-        DebugLn("[OPERATIONAL] Record successfully written to external flash.");
+        DebugLn("[MDOP]Rec>flsh ok");
     }
 #endif
 
@@ -210,7 +208,7 @@ void mode_operational_run(void)
     settings_save();
     settings_load(); // optional, wenn Konsistenz direkt benötigt
 #if defined(DEBUG_MODE_OPERATIONAL)
-    DebugUVal("[OPERATIONAL] Updated flash_record_count = ", settings->flash_record_count, ".");
+    DebugUVal("[MDOP]Upd.rec_cnt=", settings->flash_record_count, ".");
 #endif
     ///////////// Determine next alarm type and time
     uint8_t curr_h, curr_m, curr_s;
@@ -229,12 +227,12 @@ void mode_operational_run(void)
     char buf[64];
     rtc_format_time(buf, next_h, next_m, next_s);
 #if defined(DEBUG_MODE_OPERATIONAL)
-    Debug("[OPERATIONAL] Next alarm set : ");
+   // Debug("[OPERATIONAL] Next alarm set : ");
     DebugLn(buf);
     if (alarm_typ == NEXT_ALARM_TEMP)
-        DebugLn("[OPERATIONAL] Next alarm is MEASURE_TEMPERATURE_ALARM.");
+        DebugLn("[MDOP]Nxt al MEAS_TMP");
     else
-        DebugLn("[OPERATIONAL] Next alarm is DATA_TRANSFER_ALARM.");
+        DebugLn("[MDOP]Nxt al DT_XFR");
 #endif
     MCP7940N_Open();
 #if defined(DEBUG_MODE_OPERATIONAL)
@@ -245,13 +243,13 @@ void mode_operational_run(void)
 
 #if defined(DEBUG_MODE_OPERATIONAL)
     rtc_get_format_time(buf);
-    Debug("[OPERATIONAL] Current time = ");
+    Debug("[MDOP]");
     DebugLn(buf);
 #endif
 
 ///////////// Go to power_halt mode, wakeup using RTC EXTI
 #if defined(DEBUG_MODE_OPERATIONAL)
-    DebugLn("[OPERATIONAL] HALT until next RTC-Alarm");
+    DebugLn("[MDOP]HALT");
 #endif
     power_enter_halt();
     delay(100);
@@ -262,7 +260,7 @@ void mode_operational_run(void)
     __asm__("halt");
 
 #if defined(DEBUG_MODE_OPERATIONAL)
-    Debug("[DEBUG] Woke at: ");
+    Debug("[MDOP]");
     MCP7940N_Open();
     rtc_get_format_time(buf);
     MCP7940N_Close();
@@ -272,7 +270,7 @@ void mode_operational_run(void)
     if (!mode_operational_rtc_alert_triggered)
     {
 #if defined(DEBUG_MODE_OPERATIONAL)
-        DebugLn("[MODE_OPERATIONAL] Unexpected wakeup without flag. Sleeping again.");
+        DebugLn("[MDOP]RTC fail");
 #endif
         return;
     }
@@ -287,7 +285,7 @@ void mode_operational_run(void)
     if (!triggered)
     {
 #if defined(DEBUG_MODE_OPERATIONAL)
-        DebugLn("[MODE_OPERATIONAL] RTC woke but no alarm0 flag set.");
+        DebugLn("[MDOP]RTC fail");
 #endif
         return;
     }
@@ -296,21 +294,21 @@ void mode_operational_run(void)
     if (last_set_alarm_type == NEXT_ALARM_TEMP)
     {
 #if defined(DEBUG_MODE_OPERATIONAL)
-        DebugLn("[MODE_OPERATIONAL] [Interrupt] --> Temperature measurement");
+        DebugLn("[MDOP]Int->Tmp meas");
 #endif
         state_transition(MODE_OPERATIONAL);
     }
     else if (last_set_alarm_type == NEXT_ALARM_RADIO)
     {
 #if defined(DEBUG_MODE_OPERATIONAL)
-        DebugLn("[MODE_OPERATIONAL] [Interrupt] --> Data transfer");
+        DebugLn("[MDOP]Int->Dt xfr");
 #endif
         state_transition(MODE_DATA_TRANSFER);
     }
     else
     {
 #if defined(DEBUG_MODE_OPERATIONAL)
-        DebugLn("[MODE_OPERATIONAL] [Interrupt] Unknown alarm type");
+        DebugLn("[MDOP]Unknwn al type");
 #endif
         nop();
     }

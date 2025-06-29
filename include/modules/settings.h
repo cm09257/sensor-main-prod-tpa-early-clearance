@@ -1,26 +1,5 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
-
-#include <stdint.h>
-#include "types.h"
-#include "stm8s.h"
-
-//////////// Debug Message Active Flags for ind. files
-
-#define DEBUG_MODE_TEST 1
-#define DEBUG_MODE_WAIT_FOR_ACTIVATION 1
-//#define DEBUG_MODE_DATA_TRANSFER 1
-//#define DEBUG_MODE_HI_TEMP 1
-//#define DEBUG_MODE_OPERATIONAL 1
-#define DEBUG_MODE_PRE_HI_TEMP 1
-//#define DEBUG_STORAGE_C 1
-#define DEBUG_MAIN_C 1
-#define DEBUG_STATE_MACHINE_C 1
-
-#define DEVICE_ID_LSB 0x00
-#define DEVICE_ID_MSB 0xAA
-
-
 /**
  * @file settings.h
  * @brief Definitionen für Geräteeinstellungen, Kommando-Codes und Funkprotokoll.
@@ -29,46 +8,102 @@
  * Gerätekonfiguration, sowie IDs für Funkprotokollelemente laut DFP/SRS.
  */
 
-// === Feature-Konfiguration ===
+#include <stdint.h>
+#include "types.h"
+#include "stm8s.h"
 
-/// Aktiviert zyklische Messung im MODE_PRE_HIGH_TEMP
-// #define PRE_HIGH_TEMP_MEASURE 1
+//////////// Debug Message Active Flags for individual files
+#define DEBUG_MODE_TEST 1
+#define DEBUG_MODE_WAIT_FOR_ACTIVATION 1
+#define DEBUG_MODE_DATA_TRANSFER 1
+#define DEBUG_MODE_HI_TEMP 1
+#define DEBUG_MODE_OPERATIONAL 1
+#define DEBUG_MODE_PRE_HI_TEMP 1
+// #define DEBUG_STORAGE_C 1
+#define DEBUG_MAIN_C 1
+#define DEBUG_STATE_MACHINE_C 1
 
-// === Defaultwerte ===
+////////// General Configuration for All Configurations (i.e., debug & release)
+#define DEVICE_ID_LSB 0x00
+#define DEVICE_ID_MSB 0xAA
 
-/// Schwelle für das Beenden des HIGH_TEMPERATURE-Modus (°C)
-#define DEFAULT_COOL_DOWN_THRESHOLD 23.0f
+////////// Possible Build Configurations - choose either one or the other!
+// #define RELEASE_CONFIGURATION 1
+#define DEBUG_CONFIGURATION 1
 
-/// Schwelle für den Übergang in den HIGH_TEMPERATURE-Modus (°C)
-#define PRE_HIGH_TEMP_THRESHOLD_C 27.0f
+///////// RFM69 library size: tiny or full: Please select either one
+#define RFM69_LIBRARY_TINY 1
+//#define RFM69_LIBRARY_FULL 1
 
-// === Wiederholstrategien ===
+////////// Debug Configuration
+#if defined(DEBUG_CONFIGURATION)
+//// MODE_HI_TEMPERATURE
+#define DEFAULT_COOL_DOWN_THRESHOLD 23.0f   // Tmp<DEFAULT_COOL_DOWN_THRESHOLD: --> MODE_OPERATIONAL
+#define DEFAULT_HI_TMP_MEAS_INTERVAL_5MIN 2 // 2 ==> 10min  --> Global Debug flag overrides to 1min intervals!!!!
 
-/// Maximale Anzahl Ping-Wiederholungen bei fehlender Antwort
-#define MAX_PING_RETRIES 5
+//// MODE_PRE_HI_TEMPERATURE
+#define PRE_HIGH_TEMP_THRESHOLD_C 27.0f // Tmp>PRE_HIGH_TEMP_THRESHOLD: --> MODE_HI_TEMPERATURE
 
-/// Maximale Anzahl Wiederholungen bei NACK (z. B. CRC-Fehler)
-#define MAX_NACK_RETRIES 5
+//// MODE_OPERATIONAL
+#define DEFAULT_SEND_MODE 0
+#define DEFAULT_SEND_INTERVAL_5MIN 12
+#define DEFAULT_SEND_FIXED_HOUR 12
+#define DEFAULT_SEND_FIXED_MINUTE 0
+#define DEFAULT_MEAS_MODE 0
+#define DEFAULT_MEAS_INTERVAL_5MIN 2
+#define DEFAULT_MEAS_FIXED_HOUR 10
+#define DEFAULT_MEAS_FIXED_MINUTE 0
 
-// === Uplink: Chunking-Konfiguration ===
+//// MODE_WAIT_FOR_ACTIVATION
+#define MAX_ACTIVATION_PING_SEND_RETRIES 3
+#define WAIT_FOR_ACT_ACK_TIMEOUT 1000
+#define WAIT_FOR_ACT_CMD_TIMEOUT 200
+#define DELAY_BEFORE_RETRY 100
+#define WAIT_FOR_ACT_CMD_TIMEOUT_LOOP 100
 
-/// Max. Anzahl Records pro Funkpaket (limitierend: RFM69 → <64 Byte)
-#define MAX_RECORDS_PER_PACKET 10
-// → ergibt bei 5 Byte/Record + 8 Byte Overhead genau 58 Byte total
+//// MODE_DATA_TRANSFER
+#define MAX_DT_XFER_PING_SEND_RETRIES 5
+#define DT_XFER_PING_DELAY_BEFORE_RETRY 100
+#define DT_XFER_ACK_TIMEOUT 1000
+#define DT_XFER_CMD_TIMEOUT 200
+#define TIMEOUT_DT_XFER_WAIT_FOR_CMD 100
+#define DT_XFER_MAX_DT_PACKET_SEND_RETRIES 5
 
-// === Header-Codes laut DFP/SRS ===
+#endif
 
-/// Header für Aktivierungs-Pings
-#define RADIO_PING_HEADER_ACTIVATION 0xA0
+#if defined(RELEASE_CONFIGURATION)
+//// MODE_HI_TEMPERATURE
+#define DEFAULT_COOL_DOWN_THRESHOLD 70.0f   // Tmp<DEFAULT_COOL_DOWN_THRESHOLD: --> MODE_OPERATIONAL
+#define DEFAULT_HI_TMP_MEAS_INTERVAL_5MIN 2 // 2 ==> 10min  --> Global Debug flag overrides to 1min intervals!!!!
 
-/// Header für Transfer-Pings
-#define RADIO_PING_HEADER_DATA_TRANSFER 0xA1
+//// MODE_PRE_HI_TEMPERATURE
+#define PRE_HIGH_TEMP_THRESHOLD_C 75.0f // Tmp>PRE_HIGH_TEMP_THRESHOLD: --> MODE_HI_TEMPERATURE
 
-/// Header für Uplink-Datenpakete
-#define RADIO_DATA_PACKET_HEADER 0xA2
+//// MODE_OPERATIONAL
+#define DEFAULT_SEND_MODE 1
+#define DEFAULT_SEND_INTERVAL_5MIN 12
+#define DEFAULT_SEND_FIXED_HOUR 12
+#define DEFAULT_SEND_FIXED_MINUTE 0
+#define DEFAULT_MEAS_MODE 0
+#define DEFAULT_MEAS_INTERVAL_5MIN 2
+#define DEFAULT_MEAS_FIXED_HOUR 10
+#define DEFAULT_MEAS_FIXED_MINUTE 0
 
-/// Header für Downlink-Kommandos
-#define RADIO_DOWNLINK_HEADER 0xB0
+//// MODE_WAIT_FOR_ACTIVATION
+#define MAX_ACTIVATION_PING_SEND_RETRIES 3
+#define WAIT_FOR_ACT_ACK_TIMEOUT 1000
+#define WAIT_FOR_ACT_CMD_TIMEOUT 200
+#define DELAY_BEFORE_RETRY 100
+#define WAIT_FOR_ACT_CMD_TIMEOUT_LOOP 100
+
+//// MODE_DATA_TRANSFER
+#define MAX_DT_XFER_PING_SEND_RETRIES 5
+#define DT_XFER_PING_DELAY_BEFORE_RETRY 100
+#define DT_XFER_ACK_TIMEOUT 1000
+#define DT_XFER_CMD_TIMEOUT 200
+#define TIMEOUT_DT_XFER_WAIT_FOR_CMD 100
+#define DT_XFER_MAX_DT_PACKET_SEND_RETRIES 5
+#endif
 
 // === Downlink-Befehle (DFP-3) ===
 
@@ -82,11 +117,6 @@
 #define CMD_SOFT_RESET 0x08               // Gerätesoftware neu starten
 #define CMD_ACTIVATION 0x09               // Geräteaktivierung (z. B. nach Erstinstallation)
 
-// === Funkbestätigungscodes ===
-
-#define RADIO_ACK_CODE 0xAA
-#define RADIO_NACK_CODE 0x55
-
 // === Flags ===
 #define SETTINGS_FLAG_FLASH_ERASE_DONE (1 << 0)
 
@@ -96,7 +126,7 @@
  * @brief Persistente Geräteeinstellungen, gespeichert im EEPROM
  */
 typedef struct
-{ 
+{
     uint8_t high_temp_measurement_interval_5min; ///< Intervall im HIGH_TEMPERATURE-Modus
     uint8_t transfer_mode;                       ///< 0 = alle Daten, 1 = nur neue Datensätze
     uint8_t flags;                               ///< z. B. Bit 0 = Flash initialized
@@ -110,8 +140,8 @@ typedef struct
     uint8_t meas_fixed_hour;                     ///< nur bei meas_mode=1: Stunde (0–23)
     uint8_t meas_fixed_minute;                   ///< nur bei meas_mode=1: Minute (0–59)
     float cool_down_threshold;                   ///< Temperatur-Schwelle
-    uint8_t device_id_msb;                          ///< Eindeutige ID
-    uint8_t device_id_lsb;                          ///< Eindeutige ID
+    uint8_t device_id_msb;                       ///< Eindeutige ID
+    uint8_t device_id_lsb;                       ///< Eindeutige ID
 } settings_t;
 
 // === Zugriff auf Einstellungen ===
@@ -136,6 +166,5 @@ void settings_save(void);
  */
 void settings_set_default(void);
 
-void settings_set_cool_down_threshold(float threshold);
 
 #endif // SETTINGS_H
