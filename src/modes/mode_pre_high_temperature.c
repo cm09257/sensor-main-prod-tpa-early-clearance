@@ -40,6 +40,12 @@ void mode_pre_high_temperature_run(void)
     DebugLn(buf);
 #endif
 
+#if defined(ITS_TOO_HOT)
+    DebugLn("=[ITS_TOO_HOT]Hi Alrt Faked=");
+    state_transition(MODE_HIGH_TEMPERATURE);
+    return;
+#endif
+
     ////////////// Set sleep mode and wait for TMP_WAKE EXTI
     power_enter_halt();
     delay(100);

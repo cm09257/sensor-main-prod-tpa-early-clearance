@@ -99,8 +99,14 @@ void rtc_set_alarm_in_minutes(rtc_alarm_t alarm, uint16_t delta_min)
     uint32_t total = (uint32_t)m + delta_min;
     uint8_t new_m = total % 60;
     uint8_t new_h = (h + total / 60) % 24;
-
+    MCP7940N_ClearAlarmFlagX(0);
+    MCP7940N_ClearAlarmFlagX(1);
+    MCP7940N_DisableAlarmX(0);
+    MCP7940N_DisableAlarmX(1);
     MCP7940N_ConfigureAbsoluteAlarmX(alarm, new_h, new_m, s);
+    char buf[32];
+    rtc_format_time(buf, new_h, new_m, s);
+    DebugLn(buf);
     MCP7940N_Close();
 }
 

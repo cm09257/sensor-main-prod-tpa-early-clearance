@@ -30,6 +30,7 @@
 ////////// Possible Build Configurations - choose either one or the other!
 // #define RELEASE_CONFIGURATION 1
 #define DEBUG_CONFIGURATION 1
+#define ITS_TOO_HOT 1 // use if outside temps are too hi to use finger-activation of tmp126
 
 ///////// RFM69 library size: tiny or full: Please select either one
 #define RFM69_LIBRARY_TINY 1
@@ -38,19 +39,19 @@
 ////////// Debug Configuration
 #if defined(DEBUG_CONFIGURATION)
 //// MODE_HI_TEMPERATURE
-#define DEFAULT_COOL_DOWN_THRESHOLD 23.0f   // Tmp<DEFAULT_COOL_DOWN_THRESHOLD: --> MODE_OPERATIONAL
+#define DEFAULT_COOL_DOWN_THRESHOLD 22.0f   // Tmp<DEFAULT_COOL_DOWN_THRESHOLD: --> MODE_OPERATIONAL
 #define DEFAULT_HI_TMP_MEAS_INTERVAL_5MIN 2 // 2 ==> 10min  --> Global Debug flag overrides to 1min intervals!!!!
 
 //// MODE_PRE_HI_TEMPERATURE
-#define PRE_HIGH_TEMP_THRESHOLD_C 27.0f // Tmp>PRE_HIGH_TEMP_THRESHOLD: --> MODE_HI_TEMPERATURE
+#define PRE_HIGH_TEMP_THRESHOLD_C 23.0f // Tmp>PRE_HIGH_TEMP_THRESHOLD: --> MODE_HI_TEMPERATURE
 
 //// MODE_OPERATIONAL
-#define DEFAULT_SEND_MODE 0
-#define DEFAULT_SEND_INTERVAL_5MIN 12
+#define DEFAULT_SEND_MODE 0 //////////////////////// 0 = periodic, 1 = fixed time
+#define DEFAULT_SEND_INTERVAL_5MIN 1 /////////////// 1 = every 5min
 #define DEFAULT_SEND_FIXED_HOUR 12
 #define DEFAULT_SEND_FIXED_MINUTE 0
-#define DEFAULT_MEAS_MODE 0
-#define DEFAULT_MEAS_INTERVAL_5MIN 2
+#define DEFAULT_MEAS_MODE 0 //////////////////////// 0 = periodic, 1 = fixed time
+#define DEFAULT_MEAS_INTERVAL_5MIN 2 /////////////// 2 = every 10min
 #define DEFAULT_MEAS_FIXED_HOUR 10
 #define DEFAULT_MEAS_FIXED_MINUTE 0
 

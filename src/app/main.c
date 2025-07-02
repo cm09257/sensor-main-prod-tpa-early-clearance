@@ -40,21 +40,13 @@
 
 INTERRUPT_HANDLER(EXTI_PORT_D_IRQHandler, 6) ///////////////////// RTC ISR
 {
+    MCP7940N_Open();
+    MCP7940N_ClearAlarmFlagX(0);
+    MCP7940N_ClearAlarmFlagX(1);
+    MCP7940N_Close();
 #if defined(DEBUG_MAIN_C)
-    DebugUVal("[ISR] Last mode = ", mode_before_halt, "");
+    DebugUVal("[RTCISR]Last md=", mode_before_halt, "");
 #endif
-
-    if (mode_before_halt == MODE_HIGH_TEMPERATURE)
-    {
-#if defined(DEBUG_MAIN_C)
-        DebugLn("[ISR] MODE_HIGH_TEMPERATURE -> Set alert flag");
-#endif
-        mode_operational_rtc_alert_triggered = TRUE;
-    }
-    else if (mode_before_halt == MODE_OPERATIONAL)
-    {
-        mode_operational_rtc_alert_triggered = TRUE;
-    }
 }
 
 INTERRUPT_HANDLER(EXTI_PORT_C_IRQHandler, 5) ///////////////////// TMP126 ISR

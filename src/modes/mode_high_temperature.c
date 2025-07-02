@@ -177,7 +177,7 @@ void mode_high_temperature_run(void)
         rtc_get_format_time(buf);
         DebugLn(buf);
 
-        rtc_set_alarm_in_minutes(RTC_ALARM_1, 1);
+        rtc_set_alarm_in_minutes(RTC_ALARM_1, 2);
         delay(1000);
 #else
 #if defined(DEBUG_MODE_HI_TEMP)
