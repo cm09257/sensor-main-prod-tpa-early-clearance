@@ -58,8 +58,8 @@ void mode_data_transfer_run(void)
 #endif
         if (!cmd_follows)
         {
-             rtc_success = TRUE; // If not TRUE -> no Data Transfer will happen
-            break; // Gateway will not send RTC command
+            rtc_success = TRUE; // If not TRUE -> no Data Transfer will happen
+            break;              // Gateway will not send RTC command
         }
 
         /////// Wait for Set_RTC
@@ -95,18 +95,20 @@ void mode_data_transfer_run(void)
                 delay(200);
             }
 #if defined(DEBUG_MODE_DATA_TRANSFER)
-            DebugLn("[RCVD] CmdSetRtc");
-            DebugLn("[SENT] AckBySensor");
+            DebugLn("[RCVD]CmdSetRtc");
+            DebugLn("[SENT]AckBySensor");
 #endif
 
             ///////// Set RTC
             MCP7940N_Open();
             MCP7940N_SetTime(hr, min, sec);
+            delay(1);
             MCP7940N_SetDate(1, day, month, (uint8_t)(year - 2000));
             MCP7940N_Close();
+            DebugLn("set");
 
             ///////// Dump Time Settings
-#if defined(DEBUG_MODE_DATA_TRANSFER)
+/*#if defined(DEBUG_MODE_DATA_TRANSFER)
             uint8_t read_weekday, read_day, read_month, read_year;
             uint8_t read_hour, read_min, read_sec;
             MCP7940N_Open();
@@ -116,7 +118,7 @@ void mode_data_transfer_run(void)
             char buf[32];
             sprintf(buf, "%02u.%02u.%02u %02u:%02u:%02u", read_day, read_month, read_year, read_hour, read_min, read_sec);
             DebugLn(buf);
-#endif
+#endif*/
             DebugLn("=RtcSetCompl=");
             rtc_success = TRUE;
             break;

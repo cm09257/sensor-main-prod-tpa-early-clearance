@@ -52,7 +52,7 @@ typedef enum {
 #define MODE_COUNT 7
 
 // === Modusnamen als String-Array ===
-static const char* const mode_names[MODE_COUNT] = {
+/*static const char* const mode_names[MODE_COUNT] = {
     [MODE_TEST]              = "TEST",
     [MODE_WAIT_FOR_ACTIVATION] = "WAIT_FOR_ACTIVATION",
     [MODE_OPERATIONAL]       = "OPERATIONAL",
@@ -60,7 +60,7 @@ static const char* const mode_names[MODE_COUNT] = {
     [MODE_HIGH_TEMPERATURE]  = "HIGH_TEMPERATURE",
     [MODE_DATA_TRANSFER]     = "DATA_TRANSFER",
     [MODE_SLEEP]             = "SLEEP"
-};
+};*/
 
 /**
  * @brief Gibt den Namen eines Modus als String zurück.
@@ -68,7 +68,7 @@ static const char* const mode_names[MODE_COUNT] = {
  * @param mode Modus
  * @return Zeiger auf String oder "UNKNOWN"
  */
-static inline const char* mode_name(mode_t mode)
+/*static inline const char* mode_name(mode_t mode)
 {
     if ((unsigned)mode < MODE_COUNT)
     {
@@ -76,7 +76,7 @@ static inline const char* mode_name(mode_t mode)
     }
     else
         return "UNKOWN";
-}
+}*/
 
 /**
  * @enum event_t
