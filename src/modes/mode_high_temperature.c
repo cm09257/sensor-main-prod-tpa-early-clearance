@@ -174,6 +174,7 @@ void mode_high_temperature_run(void)
         ///// Plan next temperature measurement using RTC alert
 #if defined(DEBUG_MODE_HI_TEMP)
         char buf[32];
+        Debug("Time: ");
         rtc_get_format_time(buf);
         DebugLn(buf);
 
@@ -189,13 +190,13 @@ void mode_high_temperature_run(void)
 
 ///// Go to power_halt mode, wakeup using RTC EXTI
 #if defined(DEBUG_MODE_HI_TEMP)
-        DebugLn("[HI_TMP]HALT");
+        DebugLn("[HITMP]HALT");
 #endif
         power_enter_halt();
         delay(100);
         enableInterrupts();
         __asm__("halt");
-
+        disableInterrupts();
         ///// After HALT: RTC-Interrupt was triggered
         MCP7940N_Open();
         delay(5);

@@ -47,11 +47,11 @@
 
 //// MODE_OPERATIONAL
 #define DEFAULT_SEND_MODE 0 //////////////////////// 0 = periodic, 1 = fixed time
-#define DEFAULT_SEND_INTERVAL_5MIN 1 /////////////// 1 = every 5min
+#define DEFAULT_SEND_INTERVAL_5MIN 2 /////////////// 2 = every 10min
 #define DEFAULT_SEND_FIXED_HOUR 12
 #define DEFAULT_SEND_FIXED_MINUTE 0
 #define DEFAULT_MEAS_MODE 0 //////////////////////// 0 = periodic, 1 = fixed time
-#define DEFAULT_MEAS_INTERVAL_5MIN 2 /////////////// 2 = every 10min
+#define DEFAULT_MEAS_INTERVAL_5MIN 1 /////////////// 1 = every 5min
 #define DEFAULT_MEAS_FIXED_HOUR 10
 #define DEFAULT_MEAS_FIXED_MINUTE 0
 

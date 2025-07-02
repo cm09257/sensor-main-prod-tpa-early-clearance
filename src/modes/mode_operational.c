@@ -43,10 +43,6 @@ typedef struct
     uint8_t alarm_interval_5_min; // only periodic alarms, in 5min steps
 } alarm_t;
 
-// static alarm_t radio_alarm;
-
-// static alarm_t measure_temp_alarm;
-
 volatile bool mode_operational_rtc_alert_triggered = FALSE;
 
 static void rtc_dump_time_if_debug(const char *tag)
@@ -93,9 +89,8 @@ static uint32_t calc_next_alarm_sec(const alarm_t *alarm, uint32_t now_sec)
             return (now_sec + SECONDS_PER_DAY) % SECONDS_PER_DAY;
 
 #if defined(DEBUG_CONFIGURATION)
-        DebugULong("Shrt time>nxt al frm ", interval_sec, "sec");
-        uint32_t dbg = interval_sec / 10UL;
-        DebugULong(">", dbg, "sec.");
+        uint32_t dbg = interval_sec / 2UL;
+        DebugULong("DBG: Shrt time to nxt al to ", dbg, "s");
         interval_sec = dbg;
 #endif
         uint32_t next_abs =
@@ -104,7 +99,7 @@ static uint32_t calc_next_alarm_sec(const alarm_t *alarm, uint32_t now_sec)
         if (next_abs >= SECONDS_PER_DAY) /* über Mitternacht */
             next_abs -= SECONDS_PER_DAY;
 
-        DebugULong("rt:", next_abs, "");
+       // DebugULong("rt:", next_abs, "");
         return next_abs;
     }
 }
@@ -117,16 +112,16 @@ void calculate_next_alarm(
     // Zeit in Sekunden seit Mitternacht
     uint32_t now_sec = curr_h * 3600UL + curr_m * 60UL + curr_s;
 #if defined(DEBUG_MODE_OPERATIONAL)
-    DebugUVal("[Debug] Now sec = ", now_sec, "sec");
+    DebugUVal("DBG: Now = ", now_sec, "s");
 #endif
 
     uint32_t radio_sec = calc_next_alarm_sec(radio_alarm, now_sec);
-    DebugUVal("Rd ", radio_alarm->alarm_interval_5_min, "");
+   // DebugUVal("Rd ", radio_alarm->alarm_interval_5_min, "");
     uint32_t temp_sec = calc_next_alarm_sec(measure_temp_alarm, now_sec);
-    DebugUVal("Tm ", measure_temp_alarm->alarm_interval_5_min, "");
+   // DebugUVal("Tm ", measure_temp_alarm->alarm_interval_5_min, "");
 #if defined(DEBUG_MODE_OPERATIONAL)
-    DebugULong("Rd al in ", radio_sec, "s");
-    DebugULong("Tm al in ", temp_sec, "s");
+    DebugULong("Rd al at ", radio_sec, "s");
+    DebugULong("Tm al at ", temp_sec, "s");
 #endif
 
     uint32_t chosen;
@@ -135,10 +130,10 @@ void calculate_next_alarm(
         // Radio sowieso früher: Radio gewinnt
         chosen = radio_sec;
         *next_alarm_type = NEXT_ALARM_RADIO;
-        DebugLn("Rd mch earl-Rd wins");
+        // DebugLn("Rd mch earl-Rd wins");
     }
 #if defined(DEBUG_CONFIGURATION)
-    else if ((radio_sec - temp_sec) <= RADIO_PRIORITY_TOLERANCE_SEC / 10)
+    else if ((radio_sec - temp_sec) <= RADIO_PRIORITY_TOLERANCE_SEC / 2)
 #else
     else if ((radio_sec - temp_sec) <= RADIO_PRIORITY_TOLERANCE_SEC)
 #endif
@@ -146,14 +141,14 @@ void calculate_next_alarm(
         // Radio kommt knapp später: trotzdem Radio bevorzugen
         chosen = radio_sec;
         *next_alarm_type = NEXT_ALARM_RADIO;
-        DebugLn("Rd close l8t-Rd wins");
+        // DebugLn("Rd close l8t-Rd wins");
     }
     else
     {
         // Temperatur deutlich früher: Temperatur gewinnt
         chosen = temp_sec;
         *next_alarm_type = NEXT_ALARM_TEMP;
-        DebugLn("Tm mch earl-Tm wins");
+        //  DebugLn("Tm mch earl-Tm wins");
     }
 
     // Sekunden in h:m:s umrechnen
@@ -161,9 +156,10 @@ void calculate_next_alarm(
     *next_m = (chosen % 3600UL) / 60UL;
     *next_s = chosen % 60UL;
 #if defined(DEBUG_MODE_OPERATIONAL)
-    DebugUVal("Next_h = ", *next_h, "h");
-    DebugUVal("Next_m = ", *next_m, "m");
-    DebugUVal("Next_s = ", *next_s, "s");
+    char buf[32];
+    Debug("Alarm:");
+    rtc_format_time(buf, *next_h, *next_m, *next_s);
+    DebugLn(buf);
 #endif
 }
 
@@ -262,33 +258,30 @@ void mode_operational_run(void)
 
     uint8_t next_h, next_m, next_s;
     next_alarm_type_t alarm_typ;
-    DebugUVal("RdTy:", radio_alarm.alarm_type, "");
-    DebugUVal("TmTy:", measure_temp_alarm.alarm_type, "");
+    //DebugUVal("RdTy:", radio_alarm.alarm_type, "");
+   // DebugUVal("TmTy:", measure_temp_alarm.alarm_type, "");
     calculate_next_alarm(curr_h, curr_m, curr_s, &next_h, &next_m, &next_s, &alarm_typ, &radio_alarm, &measure_temp_alarm);
     disableInterrupts();
     MCP7940N_ConfigureAbsoluteAlarmX(RTC_ALARM_0, next_h, next_m, next_s);
     MCP7940N_Close();
 
     char buf[64];
-    rtc_format_time(buf, next_h, next_m, next_s);
-#if defined(DEBUG_MODE_OPERATIONAL)
-    // Debug("[OPERATIONAL] Next alarm set : ");
-    DebugLn(buf);
+#if defined(DEBUG_MODE_OPERATIONAL)    
     if (alarm_typ == NEXT_ALARM_TEMP)
-        DebugLn("[MDOP]Nxt al Tm");
+        DebugLn("[MDOP]Nxt alarm: Temp meas.");
     else
-        DebugLn("[MDOP]Nxt al Rd");
+        DebugLn("[MDOP]Nxt alarm: Data xfer.");
 #endif
-  //  MCP7940N_Open();
-//#if defined(DEBUG_MODE_OPERATIONAL)
-  //  DebugLn(MCP7940N_IsAlarm0Triggered() ? "[DEBUG] ALM0TRIG = YES" : "[DEBUG] ALM0TRIG = NO");
-    //DebugLn(MCP7940N_IsAlarmEnabled(RTC_ALARM_0) ? "[DEBUG] ALM0EN = YES" : "[DEBUG] ALM0EN = NO");
-//#endif
-  //  MCP7940N_Close();
+    //  MCP7940N_Open();
+    // #if defined(DEBUG_MODE_OPERATIONAL)
+    //   DebugLn(MCP7940N_IsAlarm0Triggered() ? "[DEBUG] ALM0TRIG = YES" : "[DEBUG] ALM0TRIG = NO");
+    // DebugLn(MCP7940N_IsAlarmEnabled(RTC_ALARM_0) ? "[DEBUG] ALM0EN = YES" : "[DEBUG] ALM0EN = NO");
+    // #endif
+    //   MCP7940N_Close();
 
 #if defined(DEBUG_MODE_OPERATIONAL)
     rtc_get_format_time(buf);
-    Debug("[MDOP]");
+    Debug("Time :");
     DebugLn(buf);
 #endif
 
@@ -302,6 +295,7 @@ void mode_operational_run(void)
     mode_before_halt = MODE_OPERATIONAL;
     mode_operational_rtc_alert_triggered = FALSE;
     __asm__("halt");
+    disableInterrupts();
 
 #if defined(DEBUG_MODE_OPERATIONAL)
     Debug("woke ");

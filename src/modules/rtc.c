@@ -41,10 +41,14 @@ timestamp_t rtc_get_timestamp(void)
 
     //////// Get date, time
     MCP7940N_Open();
+    delay(1);
     MCP7940N_GetDate(&wkday, &day, &month, &yr_since_2000);
+    delay(1);
     yr_calendar = yr_since_2000 + 2000;
     MCP7940N_GetTime(&h, &m, &s);
+    delay(1);
     MCP7940N_Close();
+    delay(1);
 
     //////// Sanity Check
     if (yr_calendar < 2025)
@@ -105,6 +109,7 @@ void rtc_set_alarm_in_minutes(rtc_alarm_t alarm, uint16_t delta_min)
     MCP7940N_DisableAlarmX(1);
     MCP7940N_ConfigureAbsoluteAlarmX(alarm, new_h, new_m, s);
     char buf[32];
+    Debug("Alarm:");
     rtc_format_time(buf, new_h, new_m, s);
     DebugLn(buf);
     MCP7940N_Close();

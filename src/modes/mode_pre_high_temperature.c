@@ -34,6 +34,7 @@ void mode_pre_high_temperature_run(void)
 ////////////// Output current temp and time
 #if defined(DEBUG_MODE_PRE_HI_TEMP)
     char buf[32];
+    Debug("Time :");
     rtc_get_format_time(buf);
     DebugLn(buf);
     TMP126_Format_Temperature(buf);
