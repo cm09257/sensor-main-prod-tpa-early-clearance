@@ -26,6 +26,7 @@ void mode_pre_high_temperature_run(void)
     TMP126_SetHiLimit(PRE_HIGH_TEMP_THRESHOLD_C);
     TMP126_SetHysteresis(1.0f);
     TMP126_Disable_TLow_Alert();
+    float hi_alt = TMP126_ReadHiLimit();
     TMP126_Enable_THigh_Alert();
 
 ////////////// Output current temp and time
@@ -36,6 +37,7 @@ void mode_pre_high_temperature_run(void)
     DebugLn(buf);
     TMP126_Format_Temperature(buf);
     DebugLn(buf);
+    DebugFVal("HiLim=",hi_alt,"");
 #endif
 
 #if defined(ITS_TOO_HOT)

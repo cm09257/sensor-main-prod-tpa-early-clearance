@@ -30,7 +30,7 @@
 ////////// Possible Build Configurations - choose either one or the other!
 // #define RELEASE_CONFIGURATION 1
 #define DEBUG_CONFIGURATION 1
-#define ITS_TOO_HOT 1 // use if outside temps are too hi to use finger-activation of tmp126
+// #define ITS_TOO_HOT 1 // use if outside temps are too hi to use finger-activation of tmp126
 
 ///////// RFM69 library size: tiny or full: Please select either one
 #define RFM69_LIBRARY_TINY 1
@@ -43,7 +43,7 @@
 #define DEFAULT_HI_TMP_MEAS_INTERVAL_5MIN 2 // 2 ==> 10min  --> Global Debug flag overrides to 1min intervals!!!!
 
 //// MODE_PRE_HI_TEMPERATURE
-#define PRE_HIGH_TEMP_THRESHOLD_C 23.0f // Tmp>PRE_HIGH_TEMP_THRESHOLD: --> MODE_HI_TEMPERATURE
+#define PRE_HIGH_TEMP_THRESHOLD_C 27.5f // Tmp>PRE_HIGH_TEMP_THRESHOLD: --> MODE_HI_TEMPERATURE
 
 //// MODE_OPERATIONAL
 #define DEFAULT_SEND_MODE 0 //////////////////////// 0 = periodic, 1 = fixed time
