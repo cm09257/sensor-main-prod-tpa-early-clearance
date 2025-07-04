@@ -4,8 +4,7 @@
 
 #include "stm8s.h"
 
-// Globales Flag, das vom EXTI gesetzt wird
-extern volatile bool pre_hi_temp_alert_triggered;
+
 
 // Hauptroutine des Zustands
 void mode_pre_high_temperature_run(void);

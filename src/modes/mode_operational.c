@@ -3,9 +3,7 @@
 #include "app/state_machine.h"
 #include "types.h"
 #include "modes/mode_operational.h"
-// #include "modules/radio.h"
 #include "modules/settings.h"
-// #include "modules/storage.h"
 #include "modules/rtc.h"
 #include "periphery/tmp126.h"
 #include "periphery/mcp7940n.h"
@@ -253,8 +251,9 @@ void mode_operational_run(void)
     uint8_t curr_h, curr_m, curr_s;
     MCP7940N_Open();
     MCP7940N_GetTime(&curr_h, &curr_m, &curr_s);
-    MCP7940N_ClearAlarmFlagX(RTC_ALARM_0);
     MCP7940N_DisableAlarmX(RTC_ALARM_0);
+    MCP7940N_ClearAlarmFlagX(RTC_ALARM_0);
+
 
     uint8_t next_h, next_m, next_s;
     next_alarm_type_t alarm_typ;
@@ -296,6 +295,10 @@ void mode_operational_run(void)
     mode_operational_rtc_alert_triggered = FALSE;
     __asm__("halt");
     disableInterrupts();
+    MCP7940N_Open();
+    MCP7940N_DisableAlarmX(0);
+    MCP7940N_ClearAlarmFlagX(0);
+    MCP7940N_Close();
 
 #if defined(DEBUG_MODE_OPERATIONAL)
     Debug("woke ");

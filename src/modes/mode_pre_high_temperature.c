@@ -11,9 +11,6 @@
 #include "utility/delay.h"
 #include "utility/debug.h"
 
-static bool pre_hi_temp_interrupt_configured = FALSE;
-volatile bool pre_hi_temp_alert_triggered = FALSE;
-
 void mode_pre_high_temperature_run(void)
 {
 #if defined(DEBUG_MODE_PRE_HI_TEMP)
@@ -52,12 +49,12 @@ void mode_pre_high_temperature_run(void)
     delay(100);
     enableInterrupts();
     __asm__("halt");
+    disableInterrupts();
 
-////////////// Woke up from EXTI
+    ////////////// Woke up from EXTI
 #if defined(DEBUG_MODE_PRE_HI_TEMP)
     DebugLn("=Hi Alrt Trigd=");
 #endif
-    disableInterrupts();
 
     ////////////// Disable alert and TMP126
     TMP126_Disable_THigh_Alert();

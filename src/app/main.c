@@ -51,7 +51,7 @@ INTERRUPT_HANDLER(EXTI_PORT_D_IRQHandler, 6) ///////////////////// RTC ISR
 
 INTERRUPT_HANDLER(EXTI_PORT_C_IRQHandler, 5) ///////////////////// TMP126 ISR
 {
-    pre_hi_temp_alert_triggered = TRUE;
+    nop();
 }
 
 ///////////////////// ISR end
