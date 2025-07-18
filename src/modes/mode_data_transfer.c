@@ -29,7 +29,7 @@ void mode_data_transfer_run(void)
 #endif
 
     //////////////Open RFM
-    RFM69_open();
+    RFM69_open(settings_get()->offset_hz);
 
     //////////// Init retry counter, ack & cmd_announce flags
     uint8_t ping_retry = 0;

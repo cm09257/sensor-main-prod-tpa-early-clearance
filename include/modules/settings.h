@@ -24,8 +24,9 @@
 #define DEBUG_STATE_MACHINE_C 1
 
 ////////// General Configuration for All Configurations (i.e., debug & release)
-#define DEVICE_ID_LSB 0x00
-#define DEVICE_ID_MSB 0xAA
+#define DEVICE_ID_LSB 0x01
+#define DEVICE_ID_MSB 0x00
+#define DEVICE_OFFSET_HZ_23_DEG -8100 // Freq offset @23deg in Hz
 
 ////////// Possible Build Configurations - choose either one or the other!
 // #define RELEASE_CONFIGURATION 1
@@ -143,6 +144,7 @@ typedef struct
     float cool_down_threshold;                   ///< Temperatur-Schwelle
     uint8_t device_id_msb;                       ///< Eindeutige ID
     uint8_t device_id_lsb;                       ///< Eindeutige ID
+    int32_t offset_hz;                           ///< RF-Freq. Offset @23°C
 } settings_t;
 
 // === Zugriff auf Einstellungen ===

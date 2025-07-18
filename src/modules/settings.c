@@ -46,6 +46,7 @@ void settings_set_default(void)
     current_settings.cool_down_threshold = DEFAULT_COOL_DOWN_THRESHOLD;                       ///< Temperatur-Schwelle
     current_settings.device_id_lsb = DEVICE_ID_LSB;                                           ///< Eindeutige ID
     current_settings.device_id_msb = DEVICE_ID_MSB;                                           ///< Eindeutige ID
+    current_settings.offset_hz = DEVICE_OFFSET_HZ_23_DEG;                                     ///< Freq Offset @23deg
 }
 void settings_load(void)
 {

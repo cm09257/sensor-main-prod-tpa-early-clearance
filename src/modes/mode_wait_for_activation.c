@@ -46,7 +46,7 @@ void mode_wait_for_activation_run(void)
         while ((!ack_received) && (retry_count < MAX_ACTIVATION_PING_SEND_RETRIES))
         {
             //////// Send ping
-            RFM69_open();
+            RFM69_open(settings_get()->offset_hz);
             send_uplink_ping_for_activation(DEVICE_ID_MSB, DEVICE_ID_LSB);
 
             //////// Check for ack
