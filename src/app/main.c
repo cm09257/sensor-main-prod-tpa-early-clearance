@@ -92,7 +92,7 @@ void main(void)
 #endif
         nop();
     }
-    system_init_phase_2(do_chip_erase);
+    system_init_phase_2(do_chip_erase,settings->offset_hz);
 #if defined(DEBUG_MAIN_C)
     DebugLn("=Sensor Main=");
 #endif

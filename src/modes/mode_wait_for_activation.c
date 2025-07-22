@@ -10,6 +10,7 @@
 #include "periphery/power.h"
 #include "periphery/mcp7940n.h"
 #include "periphery/RFM69.h"
+#include "periphery/tmp126.h"
 #include "config/config.h"
 #include "app/state_machine.h"
 #include "modules/packet_handler.h"
@@ -43,10 +44,15 @@ void mode_wait_for_activation_run(void)
         bool cmd_announced = FALSE;
 
         //////////// Send ping & wait-for-ack loop
+        float temp;
+        TMP126_OpenForMeasurement();
+        temp = TMP126_ReadTemperatureCelsius();
+        TMP126_CloseForMeasurement();
+        
         while ((!ack_received) && (retry_count < MAX_ACTIVATION_PING_SEND_RETRIES))
         {
             //////// Send ping
-            RFM69_open(settings_get()->offset_hz);
+            RFM69_open(settings_get()->offset_hz, temp);
             send_uplink_ping_for_activation(DEVICE_ID_MSB, DEVICE_ID_LSB);
 
             //////// Check for ack

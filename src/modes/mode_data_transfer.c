@@ -6,6 +6,7 @@
 #include "modules/packet_handler.h"
 #include "periphery/mcp7940n.h"
 #include "periphery/RFM69.h"
+#include "periphery/tmp126.h"
 #include "periphery/flash.h"
 #include "utility/debug.h"
 #include "utility/delay.h"
@@ -29,7 +30,11 @@ void mode_data_transfer_run(void)
 #endif
 
     //////////////Open RFM
-    RFM69_open(settings_get()->offset_hz);
+    TMP126_OpenForMeasurement();
+    float temp = TMP126_ReadTemperatureCelsius();
+    TMP126_CloseForMeasurement();
+
+    RFM69_open(settings_get()->offset_hz, temp);
 
     //////////// Init retry counter, ack & cmd_announce flags
     uint8_t ping_retry = 0;
