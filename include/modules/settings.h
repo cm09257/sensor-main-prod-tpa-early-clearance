@@ -51,9 +51,9 @@
 #define DEFAULT_SEND_INTERVAL_5MIN 2 /////////////// 2 = every 10min
 #define DEFAULT_SEND_FIXED_HOUR 12
 #define DEFAULT_SEND_FIXED_MINUTE 0
-#define DEFAULT_SEND_TIME_WINDOW_ACTIVE 0;            ///< 0 = kein Zeitfenster für Funken, 1 = Zeitfenster für funk ist aktiv
-#define DEFAULT_SEND_TIME_WINDOW_FROM_HOUR 5;         ///< Uhrzeit (nur Stunden) am Tag, ab der Funken erlaubt ist (send_time_window_active)
-#define DEFAULT_SEND_TIME_WINDOW_UNTIL_HOUR 19;       ///< Uhrzeit (nur Stunden) am Tag, bis zu der Funken erlaubt istF
+#define DEFAULT_SEND_TIME_WINDOW_ACTIVE 0            ///< 0 = kein Zeitfenster für Funken, 1 = Zeitfenster für funk ist aktiv
+#define DEFAULT_SEND_TIME_WINDOW_FROM_HOUR 5         ///< Uhrzeit (nur Stunden) am Tag, ab der Funken erlaubt ist (send_time_window_active)
+#define DEFAULT_SEND_TIME_WINDOW_UNTIL_HOUR 19       ///< Uhrzeit (nur Stunden) am Tag, bis zu der Funken erlaubt istF
 #define DEFAULT_MEAS_MODE 0 //////////////////////// 0 = periodic, 1 = fixed time
 #define DEFAULT_MEAS_INTERVAL_5MIN 1 /////////////// 1 = every 5min
 #define DEFAULT_MEAS_FIXED_HOUR 10
@@ -76,26 +76,27 @@
 
 #endif
 
+//////// Configuration for TPA Early Clearance Variant
 #if defined(RELEASE_CONFIGURATION)
 //// MODE_HI_TEMPERATURE
-#define DEFAULT_COOL_DOWN_THRESHOLD 70.0f   // Tmp<DEFAULT_COOL_DOWN_THRESHOLD: --> MODE_OPERATIONAL
-#define DEFAULT_HI_TMP_MEAS_INTERVAL_5MIN 2 // 2 ==> 10min  --> Global Debug flag overrides to 1min intervals!!!!
+#define DEFAULT_COOL_DOWN_THRESHOLD 70.0f      // Tmp<DEFAULT_COOL_DOWN_THRESHOLD: --> MODE_OPERATIONAL
+#define DEFAULT_HI_TMP_MEAS_INTERVAL_5MIN 1    // 1 ==> 5min  
 
 //// MODE_PRE_HI_TEMPERATURE
-#define PRE_HIGH_TEMP_THRESHOLD_C 75.0f // Tmp>PRE_HIGH_TEMP_THRESHOLD: --> MODE_HI_TEMPERATURE
+#define PRE_HIGH_TEMP_THRESHOLD_C 75.0f        // Tmp>PRE_HIGH_TEMP_THRESHOLD: --> MODE_HI_TEMPERATURE
 
 //// MODE_OPERATIONAL
-#define DEFAULT_SEND_MODE 1
-#define DEFAULT_SEND_INTERVAL_5MIN 12
-#define DEFAULT_SEND_FIXED_HOUR 12
-#define DEFAULT_SEND_FIXED_MINUTE 0
-#define DEFAULT_SEND_TIME_WINDOW_ACTIVE 0;            ///< 0 = kein Zeitfenster für Funken, 1 = Zeitfenster für funk ist aktiv
-#define DEFAULT_SEND_TIME_WINDOW_FROM_HOUR 5;         ///< Uhrzeit (nur Stunden) am Tag, ab der Funken erlaubt ist (send_time_window_active)
-#define DEFAULT_SEND_TIME_WINDOW_UNTIL_HOUR 19;       ///< Uhrzeit (nur Stunden) am Tag, bis zu der Funken erlaubt istF
-#define DEFAULT_MEAS_MODE 0
-#define DEFAULT_MEAS_INTERVAL_5MIN 2
-#define DEFAULT_MEAS_FIXED_HOUR 10
-#define DEFAULT_MEAS_FIXED_MINUTE 0
+#define DEFAULT_SEND_MODE 0                          /// 0 = periodic
+#define DEFAULT_SEND_INTERVAL_5MIN 6                 /// 6 = 30min send intervals
+#define DEFAULT_SEND_FIXED_HOUR 12                   /// not relevant, only for fixed-time alert
+#define DEFAULT_SEND_FIXED_MINUTE 0                  /// not relevant, only for fixed-time alert
+#define DEFAULT_SEND_TIME_WINDOW_ACTIVE 0            ///< 0 = no time window for send
+#define DEFAULT_SEND_TIME_WINDOW_FROM_HOUR 5         ///< not relevant, no time window in this configuration
+#define DEFAULT_SEND_TIME_WINDOW_UNTIL_HOUR 19       ///< not relevant, no time window in this configuration
+#define DEFAULT_MEAS_MODE 0                          /// 0 = periodic
+#define DEFAULT_MEAS_INTERVAL_5MIN 2                 /// 2 = 10min intervals
+#define DEFAULT_MEAS_FIXED_HOUR 10                   /// not relevant, only for fixed-time alert
+#define DEFAULT_MEAS_FIXED_MINUTE 0                  /// not relevant, only for fixed-time alert
 
 //// MODE_WAIT_FOR_ACTIVATION
 #define MAX_ACTIVATION_PING_SEND_RETRIES 3

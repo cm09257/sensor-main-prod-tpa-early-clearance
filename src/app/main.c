@@ -92,10 +92,13 @@ void main(void)
 #endif
         nop();
     }
-    system_init_phase_2(do_chip_erase,settings->offset_hz);
+    system_init_phase_2(do_chip_erase, settings->offset_hz);
 #if defined(DEBUG_MAIN_C)
     DebugLn("=Sensor Main=");
 #endif
+    DebugLn("TPA Early Clearance Variant");
+    DebugHex("Sensor ID MSB ", DEVICE_ID_MSB);
+    DebugHex("Sensor ID LSB ", DEVICE_ID_LSB);
 
     state_init(); ///< Zustandsmaschine aus EEPROM laden oder auf MODE_TEST setzen
                   // DebugMenu_Init(); // Show Debug Menu
