@@ -34,11 +34,14 @@ void settings_set_default(void)
     current_settings.high_temp_measurement_interval_5min = DEFAULT_HI_TMP_MEAS_INTERVAL_5MIN; ///< Intervall im HIGH_TEMPERATURE-Modus
     current_settings.transfer_mode = 0;                                                       ///< 0 = alle Daten, 1 = nur neue Datensätze
     current_settings.flags = 0x00;                                                            ///< z. B. Bit 0 = Flash initialized
-    current_settings.flash_record_count = 0;                                                      ///< Anzahl Datensätze im externen Flash
+    current_settings.flash_record_count = 0;                                                  ///< Anzahl Datensätze im externen Flash
     current_settings.send_mode = DEFAULT_SEND_MODE;                                           ///< 0 = periodisch, 1 = feste Uhrzeit
     current_settings.send_interval_5min = DEFAULT_SEND_INTERVAL_5MIN;                         ///< nur bei send_mode=0: Intervall (in 5-min Schritten)
     current_settings.send_fixed_hour = DEFAULT_SEND_FIXED_HOUR;                               ///< nur bei send_mode=1: Stunde (0–23)
     current_settings.send_fixed_minute = DEFAULT_SEND_FIXED_MINUTE;                           ///< nur bei send_mode=1: Minute (0–59)
+    current_settings.send_time_window_active = DEFAULT_SEND_TIME_WINDOW_ACTIVE;               ///< 0 = kein Zeitfenster für Funken, 1 = Zeitfenster für funk ist aktiv
+    current_settings.send_time_window_from_hour = DEFAULT_SEND_TIME_WINDOW_FROM_HOUR;         ///< Uhrzeit (nur Stunden) am Tag, ab der Funken erlaubt ist (send_time_window_active)
+    current_settings.send_time_window_until_hour = DEFAULT_SEND_TIME_WINDOW_UNTIL_HOUR;       ///< Uhrzeit (nur Stunden) am Tag, bis zu der Funken erlaubt ist
     current_settings.meas_mode = DEFAULT_MEAS_MODE;                                           ///< 0 = periodisch, 1 = feste Uhrzeit
     current_settings.meas_interval_5min = DEFAULT_MEAS_INTERVAL_5MIN;                         ///< nur bei meas_mode=0: Intervall (in 5-min Schritten)
     current_settings.meas_fixed_hour = DEFAULT_MEAS_FIXED_HOUR;                               ///< nur bei meas_mode=1: Stunde (0–23)

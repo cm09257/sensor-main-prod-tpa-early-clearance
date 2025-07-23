@@ -51,6 +51,9 @@
 #define DEFAULT_SEND_INTERVAL_5MIN 2 /////////////// 2 = every 10min
 #define DEFAULT_SEND_FIXED_HOUR 12
 #define DEFAULT_SEND_FIXED_MINUTE 0
+#define DEFAULT_SEND_TIME_WINDOW_ACTIVE 0;            ///< 0 = kein Zeitfenster für Funken, 1 = Zeitfenster für funk ist aktiv
+#define DEFAULT_SEND_TIME_WINDOW_FROM_HOUR 5;         ///< Uhrzeit (nur Stunden) am Tag, ab der Funken erlaubt ist (send_time_window_active)
+#define DEFAULT_SEND_TIME_WINDOW_UNTIL_HOUR 19;       ///< Uhrzeit (nur Stunden) am Tag, bis zu der Funken erlaubt istF
 #define DEFAULT_MEAS_MODE 0 //////////////////////// 0 = periodic, 1 = fixed time
 #define DEFAULT_MEAS_INTERVAL_5MIN 1 /////////////// 1 = every 5min
 #define DEFAULT_MEAS_FIXED_HOUR 10
@@ -137,6 +140,9 @@ typedef struct
     uint8_t send_interval_5min;                  ///< nur bei send_mode=0: Intervall (in 5-min Schritten)
     uint8_t send_fixed_hour;                     ///< nur bei send_mode=1: Stunde (0–23)
     uint8_t send_fixed_minute;                   ///< nur bei send_mode=1: Minute (0–59)
+    uint8_t send_time_window_active;             ///< 0 = kein Zeitfenster für Funken, 1 = Zeitfenster für funk ist aktiv
+    uint8_t send_time_window_from_hour;          ///< Uhrzeit (nur Stunden) am Tag, ab der Funken erlaubt ist (send_time_window_active)
+    uint8_t send_time_window_until_hour;         ///< Uhrzeit (nur Stunden) am Tag, bis zu der Funken erlaubt ist
     uint8_t meas_mode;                           ///< 0 = periodisch, 1 = feste Uhrzeit
     uint8_t meas_interval_5min;                  ///< nur bei meas_mode=0: Intervall (in 5-min Schritten)
     uint8_t meas_fixed_hour;                     ///< nur bei meas_mode=1: Stunde (0–23)
