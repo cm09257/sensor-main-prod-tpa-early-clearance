@@ -97,7 +97,7 @@ static uint32_t calc_next_alarm_sec(const alarm_t *alarm, uint32_t now_sec)
         if (next_abs >= SECONDS_PER_DAY) /* über Mitternacht */
             next_abs -= SECONDS_PER_DAY;
 
-       // DebugULong("rt:", next_abs, "");
+        // DebugULong("rt:", next_abs, "");
         return next_abs;
     }
 }
@@ -114,9 +114,9 @@ void calculate_next_alarm(
 #endif
 
     uint32_t radio_sec = calc_next_alarm_sec(radio_alarm, now_sec);
-   // DebugUVal("Rd ", radio_alarm->alarm_interval_5_min, "");
+    // DebugUVal("Rd ", radio_alarm->alarm_interval_5_min, "");
     uint32_t temp_sec = calc_next_alarm_sec(measure_temp_alarm, now_sec);
-   // DebugUVal("Tm ", measure_temp_alarm->alarm_interval_5_min, "");
+    // DebugUVal("Tm ", measure_temp_alarm->alarm_interval_5_min, "");
 #if defined(DEBUG_MODE_OPERATIONAL)
     DebugULong("Rd al at ", radio_sec, "s");
     DebugULong("Tm al at ", temp_sec, "s");
@@ -159,6 +159,25 @@ void calculate_next_alarm(
     rtc_format_time(buf, *next_h, *next_m, *next_s);
     DebugLn(buf);
 #endif
+}
+
+bool time_in_window(uint8_t h, uint8_t m,
+                    uint8_t start_h, uint8_t start_m,
+                    uint8_t stop_h, uint8_t stop_m)
+{
+    uint16_t now = h * 60 + m;
+    uint16_t start = start_h * 60 + start_m;
+    uint16_t stop = stop_h * 60 + stop_m;
+
+    if (start <= stop)
+    {
+        return now >= start && now <= stop;
+    }
+    else
+    {
+        // Zeitfenster geht über Mitternacht
+        return now >= start || now <= stop;
+    }
 }
 
 void mode_operational_run(void)
@@ -254,18 +273,17 @@ void mode_operational_run(void)
     MCP7940N_DisableAlarmX(RTC_ALARM_0);
     MCP7940N_ClearAlarmFlagX(RTC_ALARM_0);
 
-
     uint8_t next_h, next_m, next_s;
     next_alarm_type_t alarm_typ;
-    //DebugUVal("RdTy:", radio_alarm.alarm_type, "");
-   // DebugUVal("TmTy:", measure_temp_alarm.alarm_type, "");
+    // DebugUVal("RdTy:", radio_alarm.alarm_type, "");
+    // DebugUVal("TmTy:", measure_temp_alarm.alarm_type, "");
     calculate_next_alarm(curr_h, curr_m, curr_s, &next_h, &next_m, &next_s, &alarm_typ, &radio_alarm, &measure_temp_alarm);
     disableInterrupts();
     MCP7940N_ConfigureAbsoluteAlarmX(RTC_ALARM_0, next_h, next_m, next_s);
     MCP7940N_Close();
 
     char buf[64];
-#if defined(DEBUG_MODE_OPERATIONAL)    
+#if defined(DEBUG_MODE_OPERATIONAL)
     if (alarm_typ == NEXT_ALARM_TEMP)
         DebugLn("[MDOP]Nxt alarm: Temp meas.");
     else
@@ -321,6 +339,30 @@ void mode_operational_run(void)
 #if defined(DEBUG_MODE_OPERATIONAL)
         DebugLn("[MDOP]Int->Dt xfr");
 #endif
+
+        if (settings->timewindow_active)
+        {
+            // Hole aktuelle Uhrzeit
+            uint8_t h, m, s;
+            MCP7940N_Open();
+            MCP7940N_GetTime(&h, &m, &s);
+            MCP7940N_Close();
+
+            bool in_window = time_in_window(
+                h, m,
+                settings->send_time_window_from_hour, 0,
+                settings->send_time_window_until_hour, 0);
+
+            if (!in_window)
+            {
+#if defined(DEBUG_MODE_OPERATIONAL)
+                DebugLn("[MDOP]Out of tx wndw.stay in op");
+#endif
+                state_transition(MODE_OPERATIONAL);
+                return;
+            }
+        }
+
         state_transition(MODE_DATA_TRANSFER);
         return;
     }
