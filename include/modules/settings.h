@@ -29,8 +29,8 @@
 #define DEVICE_OFFSET_HZ_23_DEG   9617  // Freq offset @23deg in Hz
 
 ////////// Possible Build Configurations - choose either one or the other!
-// #define RELEASE_CONFIGURATION 1
-#define DEBUG_CONFIGURATION 1
+#define RELEASE_CONFIGURATION 1
+//#define DEBUG_CONFIGURATION 1
 // #define ITS_TOO_HOT 1 // use if outside temps are too hi to use finger-activation of tmp126
 
 ///////// RFM69 library size: tiny or full: Please select either one
@@ -89,6 +89,9 @@
 #define DEFAULT_SEND_INTERVAL_5MIN 12
 #define DEFAULT_SEND_FIXED_HOUR 12
 #define DEFAULT_SEND_FIXED_MINUTE 0
+#define DEFAULT_SEND_TIME_WINDOW_ACTIVE 0;            ///< 0 = kein Zeitfenster für Funken, 1 = Zeitfenster für funk ist aktiv
+#define DEFAULT_SEND_TIME_WINDOW_FROM_HOUR 5;         ///< Uhrzeit (nur Stunden) am Tag, ab der Funken erlaubt ist (send_time_window_active)
+#define DEFAULT_SEND_TIME_WINDOW_UNTIL_HOUR 19;       ///< Uhrzeit (nur Stunden) am Tag, bis zu der Funken erlaubt istF
 #define DEFAULT_MEAS_MODE 0
 #define DEFAULT_MEAS_INTERVAL_5MIN 2
 #define DEFAULT_MEAS_FIXED_HOUR 10

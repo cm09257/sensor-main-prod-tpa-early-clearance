@@ -340,7 +340,7 @@ void mode_operational_run(void)
         DebugLn("[MDOP]Int->Dt xfr");
 #endif
 
-        if (settings->timewindow_active)
+        if (settings->send_time_window_active)
         {
             // Hole aktuelle Uhrzeit
             uint8_t h, m, s;
