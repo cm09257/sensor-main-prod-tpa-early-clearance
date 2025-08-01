@@ -268,21 +268,28 @@ void mode_operational_run(void)
 #endif
     ///////////// Determine next alarm type and time
     uint8_t curr_h, curr_m, curr_s;
+sleep_again:    
     MCP7940N_Open();
     MCP7940N_GetTime(&curr_h, &curr_m, &curr_s);
     MCP7940N_DisableAlarmX(RTC_ALARM_0);
     MCP7940N_ClearAlarmFlagX(RTC_ALARM_0);
+    MCP7940N_DisableAlarmX(RTC_ALARM_1);
+    MCP7940N_ClearAlarmFlagX(RTC_ALARM_1);
 
     uint8_t next_h, next_m, next_s;
     next_alarm_type_t alarm_typ;
     // DebugUVal("RdTy:", radio_alarm.alarm_type, "");
     // DebugUVal("TmTy:", measure_temp_alarm.alarm_type, "");
     calculate_next_alarm(curr_h, curr_m, curr_s, &next_h, &next_m, &next_s, &alarm_typ, &radio_alarm, &measure_temp_alarm);
+    char buf[32];
+    rtc_format_time(buf, next_h, next_m, next_s);
+    Debug("setting al to :");
+    DebugLn(buf);
     disableInterrupts();
     MCP7940N_ConfigureAbsoluteAlarmX(RTC_ALARM_0, next_h, next_m, next_s);
     MCP7940N_Close();
 
-    char buf[64];
+    // char buf[64];
 #if defined(DEBUG_MODE_OPERATIONAL)
     if (alarm_typ == NEXT_ALARM_TEMP)
         DebugLn("[MDOP]Nxt alarm: Temp meas.");
@@ -306,6 +313,7 @@ void mode_operational_run(void)
 #if defined(DEBUG_MODE_OPERATIONAL)
     DebugLn("[MDOP]HALT");
 #endif
+
     power_enter_halt();
     delay(100);
     enableInterrupts();
@@ -316,6 +324,16 @@ void mode_operational_run(void)
     MCP7940N_Open();
     MCP7940N_DisableAlarmX(0);
     MCP7940N_ClearAlarmFlagX(0);
+    MCP7940N_GetTime(&curr_h, &curr_m, &curr_s);
+
+    if (curr_h < next_h || (curr_h == next_h && curr_m < next_m))
+    {
+        MCP7940N_Close();
+#if defined(DEBUG_MODE_OPERATIONAL)
+        DebugLn("[MDOP]Woke early.");
+#endif
+        goto sleep_again;
+    }
     MCP7940N_Close();
 
 #if defined(DEBUG_MODE_OPERATIONAL)
