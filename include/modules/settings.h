@@ -26,7 +26,7 @@
 ////////// General Configuration for All Configurations (i.e., debug & release)
 #define DEVICE_ID_LSB 0x19
 #define DEVICE_ID_MSB 0x00
-#define DEVICE_OFFSET_HZ_23_DEG   0  // Freq offset @23deg in Hz
+#define DEVICE_OFFSET_HZ_23_DEG   2100  // Freq offset @23deg in Hz
 
 ////////// Possible Build Configurations - choose either one or the other!
 #define RELEASE_CONFIGURATION 1
