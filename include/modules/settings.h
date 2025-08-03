@@ -24,7 +24,7 @@
 #define DEBUG_STATE_MACHINE_C 1
 
 ////////// General Configuration for All Configurations (i.e., debug & release)
-#define DEVICE_ID_LSB 0x00
+#define DEVICE_ID_LSB 0x1F
 #define DEVICE_ID_MSB 0x00
 #define DEVICE_OFFSET_HZ_23_DEG   0  // Freq offset @23deg in Hz
 
